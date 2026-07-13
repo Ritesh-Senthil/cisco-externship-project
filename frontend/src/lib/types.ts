@@ -111,6 +111,20 @@ export interface ReadinessSnapshot {
   suggested_questions: string[];
 }
 
+export interface CatalystStatus {
+  live: boolean;
+  connected: boolean;
+  host: string | null;
+  device_count: number | null;
+  network_health_score: number | null;
+  ai_issue_count: number | null;
+  top_ai_issue: string | null;
+  last_updated: number | null;
+  fail_count: number;
+  circuit_open: boolean;
+  note: string;
+}
+
 export interface ScenarioSnapshot {
   phase: ScenarioPhase;
   streams_paused: boolean;
@@ -121,5 +135,6 @@ export interface ScenarioSnapshot {
   timeline: TimelineEvent[];
   recent_events: unknown[];
   map_zones: Record<string, string>;
+  catalyst?: CatalystStatus | null;
   simulated_banner: string;
 }

@@ -163,6 +163,22 @@ class TimelineEvent(BaseModel):
     kind: str  # status | incident | action | recovery | system
 
 
+class CatalystStatus(BaseModel):
+    """Real Cisco Catalyst Center control-plane evidence (best-effort)."""
+
+    live: bool = False
+    connected: bool = False
+    host: str | None = None
+    device_count: int | None = None
+    network_health_score: float | None = None
+    ai_issue_count: int | None = None
+    top_ai_issue: str | None = None
+    last_updated: float | None = None
+    fail_count: int = 0
+    circuit_open: bool = False
+    note: str = "standby"
+
+
 class ScenarioSnapshot(BaseModel):
     phase: ScenarioPhase
     streams_paused: bool
@@ -173,6 +189,7 @@ class ScenarioSnapshot(BaseModel):
     timeline: list[TimelineEvent]
     recent_events: list[DomainEvent]
     map_zones: dict[str, str]
+    catalyst: CatalystStatus | None = None
     simulated_banner: str = "Simulated data for demonstration purposes."
 
 

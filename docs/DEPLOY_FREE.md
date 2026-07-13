@@ -11,6 +11,7 @@ Permanent free stack for the hosted demo, plus local Docker Splunk attached from
 | Postgres | Northflank free addon | Uses the 1 free database slot |
 | Redis | [Upstash](https://upstash.com) Free | `rediss://` TLS URL |
 | LLM | [Groq](https://console.groq.com) Free | OpenAI-compatible API |
+| Cisco Catalyst Center | [DevNet Always-On sandbox](https://sandboxdnac.cisco.com) | Free 24/7; real read-only control-plane evidence (`CATALYST_LIVE=true`) |
 | Splunk | Local Docker + Cloudflare Tunnel | No permanent free Splunk Cloud |
 
 ```
@@ -61,7 +62,14 @@ Presenter-oriented copy also lives in [DEMO_MANUAL.md](./DEMO_MANUAL.md) §1.
 | `LLM_TIMEOUT_SECONDS` | `18` |
 | `SPLUNK_ENABLED` | `false` |
 | `SPLUNK_HEC_TOKEN` | `eventshield-hec-token-change-me` |
+| `CATALYST_LIVE` | `true` (lights up the live Cisco Catalyst Center badge) |
+| `CATALYST_BASE_URL` | `https://sandboxdnac.cisco.com` |
 | `DEMO_ADMIN_TOKEN` | long random secret (required for Splunk attach) |
+
+Catalyst is read-only and best-effort: if the DevNet sandbox is unreachable the backend
+degrades to a "Standby" badge and the synthetic scenario is unaffected. Sandbox
+credentials (`devnetuser` / `Cisco123!`) are the built-in defaults, so `CATALYST_LIVE=true`
+is the only variable required to enable it.
 
 5. Note the public HTTPS URL (e.g. `https://….code.run` or your Northflank domain).
 
@@ -123,6 +131,7 @@ Fully local demo (no cloud) still works with `./scripts/demo_up.sh` — backend 
 
 - [ ] `curl -s https://YOUR-BACKEND/api/health` → `{"status":"ok",...}`
 - [ ] `curl -s https://YOUR-BACKEND/api/persistence` → `postgres_enabled` / `redis_enabled` true
+- [ ] `curl -s https://YOUR-BACKEND/api/admin/catalyst` → `"live":true` and (when the sandbox is up) `"connected":true` with a `device_count`; Evidence drawer (⌘⇧D) shows the Cisco Catalyst Center badge
 - [ ] Vercel UI loads; WebSocket shows connected; scenario controller (⌘⇧E) advances phases
 - [ ] AI fallback ON returns canned answers; toggle OFF once and confirm Groq (or fallback on timeout)
 - [ ] `./scripts/wire_splunk.sh` → persistence shows `splunk_attached: true`, `splunk_enabled: true`

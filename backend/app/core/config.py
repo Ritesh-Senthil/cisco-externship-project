@@ -33,6 +33,16 @@ class Settings(BaseSettings):
     splunk_hec_verify_ssl: bool = False
     splunk_enabled: bool = True
 
+    # Cisco Catalyst Center "control plane" evidence (real, read-only, best-effort).
+    # Off by default so local/offline demos never reach out; hosted enables via env.
+    catalyst_live: bool = False
+    catalyst_base_url: str = "https://sandboxdnac.cisco.com"
+    catalyst_username: str = "devnetuser"
+    catalyst_password: str = "Cisco123!"
+    catalyst_verify_ssl: bool = False
+    catalyst_poll_seconds: float = 30.0
+    catalyst_timeout_seconds: float = 6.0
+
     # Protects /api/admin/splunk/* attach|detach. Empty = open (local demo only).
     # Hosted deploys MUST set a non-empty token.
     demo_admin_token: str = ""

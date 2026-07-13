@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from app.engines.intelligence import correlate_incident, evaluate_readiness, preopening_plan
+from app.integrations.catalyst import catalyst
 from app.models.schemas import (
+    CatalystStatus,
     DomainEvent,
     ScenarioPhase,
     ScenarioSnapshot,
@@ -89,4 +91,5 @@ def build_snapshot(advance: bool = False) -> ScenarioSnapshot:
         timeline=timeline,
         recent_events=recent,
         map_zones=map_zone_statuses(),
+        catalyst=CatalystStatus.model_validate(catalyst.status()),
     )

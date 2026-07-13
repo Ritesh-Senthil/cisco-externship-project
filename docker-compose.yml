@@ -60,6 +60,10 @@ services:
       SPLUNK_HEC_TOKEN: eventshield-hec-token-change-me
       SPLUNK_HEC_VERIFY_SSL: "false"
       SPLUNK_ENABLED: "true"
+      # Real Cisco Catalyst Center evidence. Off by default; set "true" to enable the
+      # live control-plane badge (requires outbound internet to the DevNet sandbox).
+      CATALYST_LIVE: "false"
+      CATALYST_BASE_URL: https://sandboxdnac.cisco.com
       CORS_ORIGINS: http://localhost:3000
       OLLAMA_BASE_URL: http://host.docker.internal:11434
     extra_hosts:

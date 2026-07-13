@@ -54,6 +54,88 @@ Living checklist of work left after the initial scaffold. Ordered by presentatio
 
 ---
 
+## Cisco Catalyst Center integration (dual-plane) — IMPLEMENTED
+
+> Status: shipped. Backend `integrations/catalyst.py` polls the sandbox on its own loop,
+> the status rides in the snapshot, the LLM prompt is grounded with live Catalyst facts,
+> and the Evidence drawer renders the provenance badge. Enable in hosted prod with the
+> single env var `CATALYST_LIVE=true` (Northflank) — off by default everywhere else so
+> local/offline demos never call out. Verify: `GET /api/admin/catalyst`.
+
+Goal: add real Cisco credibility without disturbing the Gate 1 narrative. Instead of
+replacing synthetic data, treat Catalyst Center as a second, real **plane** underneath
+the existing scenario engine.
+
+- **Control plane (real Catalyst).** The "venue network backbone." Poll live health,
+  device inventory, and AI-driven issues from the DevNet Always-On sandbox. In the
+  sandbox this reads ~healthy — which is exactly what the story wants: the backbone is
+  fine, so the failure is localized.
+- **Edge plane (synthetic, unchanged).** The Gate 1 scenario engine keeps driving the
+  full arc (CONDITIONAL OPEN → incident → recovery). Demo flow does not change.
+
+Because the narrative was always "localized problem, everything else healthy," a healthy
+live backbone *reinforces* the story instead of contradicting it: "Catalyst Center
+reports the venue backbone healthy; the degradation is isolated to the Gate 1 AP."
+
+### Sandbox coordinates
+
+| Item | Value |
+|---|---|
+| Base URL | `https://sandboxdnac.cisco.com` (backup: `sandboxdnac2.cisco.com`) |
+| Credentials | `devnetuser` / `Cisco123!` |
+| Cost / uptime | Free, 24/7, no reservation (shared box — occasional maintenance desyncs) |
+| Auth | `POST /dna/system/api/v1/auth/token` (Basic Auth) → `{"Token": ...}`, 1-hour TTL, sent as `X-Auth-Token` header |
+| TLS | Be ready to relax cert verification if the appliance presents a self-signed chain |
+
+### Endpoints to pull
+
+| Endpoint | Returns | Use |
+|---|---|---|
+| `GET /dna/intent/api/v1/issues?aiDriven=YES` | Cisco ML-flagged assurance issues (name, priority, category, rootCause, suggestedActions) | Insight *format/voice* + optional real blockers |
+| `GET /dna/intent/api/v1/network-health` | Overall backbone health score by category | Live "backbone healthy" fact |
+| `GET /dna/intent/api/v1/network-device` | Real device inventory (9300s, ASR, 3850) | Provenance badge + real asset IDs |
+| `GET /dna/intent/api/v1/site-health`, `client-health` | Site / client health scores | Optional deeper evidence |
+
+### Implementation plan
+
+1. **New integration module** `backend/app/integrations/catalyst.py`, structured like
+   `integrations/splunk.py`: token cache + refresh on `401`, `X-Auth-Token` calls,
+   circuit breaker, timeout, and a `synthetic=False` marker so real vs. simulated data
+   stays distinguishable.
+2. **Background poll only.** Fetch on a tick and cache the last good response. Never
+   block a UI request or the readiness engine on the sandbox.
+3. **Feature flag** `CATALYST_LIVE` (default `false`, in `.env`), analogous to
+   `AI_FALLBACK_DEFAULT`. Presenter toggles real Catalyst on only when the sandbox is
+   confirmed healthy; if it is down, the badge greys out and the synthetic story is
+   untouched.
+4. **Provenance badge** in the Evidence drawer (⌘⇧D): "Cisco Catalyst Center —
+   connected · token acquired · N devices managed," from a live `network-device` call.
+   Highest credibility per effort; touches no scenario numbers.
+5. **LLM grounding** — in `ai/orchestrator.py` `_build_context()`, append real facts
+   (live network-health score, managed-device count, optionally one real `aiDriven`
+   issue) next to the synthetic Gate 1 facts, so the model can truthfully contrast a
+   healthy backbone with the localized Gate 1 degradation.
+6. **Insight re-skin (optional)** — capture the real `aiDriven` issue object shape once
+   and render the synthetic Gate 1 wireless blocker in that same Cisco Assurance
+   vocabulary; optionally hydrate a genuine device hostname/serial so asset IDs are real.
+
+### Resilience (non-negotiable for live demo)
+
+Reuse the Splunk patterns: circuit breaker + short timeout, background poll with cached
+last-good value, and the `CATALYST_LIVE` toggle for a clean offline fallback. The demo
+must remain fully functional with the sandbox unreachable.
+
+### Known limitation
+
+The sandbox is a generic campus network with old inventory timestamps; it will not
+produce the fair-specific arc. It serves as the "healthy backbone" / provenance layer,
+not a replacement for the scenario engine. Pitch: *"EventShield rides on real Cisco
+Catalyst Center telemetry for network truth, then correlates it cross-domain with venue
+operations to catch the localized failure Catalyst alone wouldn't connect to ticketing,
+transit, and crowd."*
+
+---
+
 ## Already in good shape
 
 - Scenario controller (⌘⇧E) and discreet header control
@@ -63,6 +145,7 @@ Living checklist of work left after the initial scaffold. Ordered by presentatio
 - Command Center, Gate 1 Detail, Active Incident, Timeline, Evidence drawer
 - Dual LLM wiring (Ollama + OpenAI-compatible API) with canned fallback
 - Splunk HEC dual-publish path with circuit breaker
+- Cisco Catalyst Center live control-plane evidence (dual-plane, circuit-broken, `CATALYST_LIVE`)
 - Docker Compose for Postgres, Redis, Splunk
 
 ---

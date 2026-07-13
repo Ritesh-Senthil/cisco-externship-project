@@ -15,6 +15,7 @@ from app.ai.orchestrator import ask_llm
 from app.core.config import get_settings
 from app.engines.intelligence import evaluate_readiness, incident_plan, preopening_plan
 from app.engines.snapshot import build_snapshot
+from app.integrations.catalyst import catalyst
 from app.integrations.splunk import splunk
 from app.integrations.store import store
 from app.models.schemas import AiQuestionRequest
@@ -176,6 +177,12 @@ async def reject_incident() -> Any:
     result = controller.reject_plan()
     await store.log_action(runtime.phase.value, "plan_gate1_incident", "rejected")
     return result
+
+
+@router.get("/admin/catalyst")
+async def catalyst_status() -> Any:
+    """Live Cisco Catalyst Center control-plane status (real, read-only evidence)."""
+    return catalyst.status()
 
 
 @router.get("/admin/splunk")

@@ -136,6 +136,11 @@ def _build_context(question: str, readiness: ReadinessSnapshot, incident: dict[s
         facts.append(f"Incident: {incident.get('title')} ({incident.get('state')})")
         facts.append(f"Cause: {incident.get('likely_cause')}")
 
+    # Real Cisco Catalyst Center control-plane evidence (only when live + connected).
+    from app.integrations.catalyst import catalyst
+
+    facts.extend(catalyst.context_facts())
+
     return (
         "You are EventShield, Cisco's operations assistant for the N.C. State Fair "
         "operations team. Speak as a live production system about fair readiness, gates, "
