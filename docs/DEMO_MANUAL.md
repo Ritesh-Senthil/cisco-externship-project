@@ -18,49 +18,91 @@ out loud early — it keeps the demo honest.
 
 ## 1. Quick start
 
-### One command (recommended)
+### Hosted demo (recommended)
+
+UI, API, Postgres, Redis, and Groq stay online. From a cold laptop you only attach
+local Splunk for the evidence talk-track.
+
+#### New laptop setup (clone → present)
+
+You do **not** need Postgres, Redis, Python, or `npm` on the laptop — only Docker
+Splunk + a tunnel. Cloud stays running.
+
+1. Install **Docker Desktop** and start it (wait until it is ready).
+2. Install **cloudflared** (once):
+   ```bash
+   brew install cloudflare/cloudflare/cloudflared
+   ```
+3. Clone and configure:
+   ```bash
+   git clone https://github.com/Ritesh-Senthil/cisco-externship-project.git
+   cd cisco-externship-project
+   cp .env.hosted.example .env.hosted
+   ```
+   Edit `.env.hosted`:
+   ```bash
+   EVENTSHIELD_API_BASE=https://api--eventshield-backend--nqtdqq6465jh.code.run
+   DEMO_ADMIN_TOKEN=<same secret as Northflank DEMO_ADMIN_TOKEN>
+   SPLUNK_HEC_TOKEN=eventshield-hec-token-change-me
+   ```
+4. Attach Splunk (leave this terminal open):
+   ```bash
+   ./scripts/wire_splunk.sh
+   ```
+5. Open the app: **https://eventshield-steel.vercel.app**  
+   Splunk Web (optional): **http://localhost:8001** (`admin` / `EventShield1!`)
+
+Skip steps 1–4 if you are not showing Splunk — the Vercel URL works with nothing local.
+
+Ctrl+C on the wire script detaches. Full stop (detach + stop Splunk):
+
+```bash
+./scripts/wire_splunk.sh --down
+```
+
+Cloud account / env details: [DEPLOY_FREE.md](./DEPLOY_FREE.md).
+
+| What | URL |
+|---|---|
+| Demo app | https://eventshield-steel.vercel.app |
+| API health | https://api--eventshield-backend--nqtdqq6465jh.code.run/api/health |
+| Integrations | https://api--eventshield-backend--nqtdqq6465jh.code.run/api/persistence |
+| Splunk Web (local) | http://localhost:8001 (`admin` / `EventShield1!`) |
+
+### Local full stack (fallback / offline)
 
 ```bash
 ./scripts/demo_up.sh
 ```
 
-This brings up the infra containers (Postgres, Redis, Splunk), ensures Splunk
-indexes, starts the backend and frontend, waits for health, and prints URLs.
+Brings up Postgres, Redis, Splunk, backend, and frontend on this machine. Then open
+**http://localhost:3000**.
 
-Then open **http://localhost:3000**.
-
-### Manual start (if you prefer)
+Manual equivalent:
 
 ```bash
-# 1. Infra (needs Docker Desktop running)
 docker compose up -d postgres redis splunk
-
-# 2. Backend
 cd backend && .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
-
-# 3. Frontend
 cd frontend && npm run dev -- --port 3000
 ```
-
-### URLs and health
 
 | What | URL |
 |---|---|
 | Demo app | http://localhost:3000 |
 | API health | http://localhost:8000/api/health |
-| Integrations health (PG/Redis/Splunk) | http://localhost:8000/api/persistence |
+| Integrations | http://localhost:8000/api/persistence |
 | Splunk Web | http://localhost:8001 (`admin` / `EventShield1!`) |
 
 ### Pre-flight checklist (do this 10 minutes before)
 
-- [ ] `curl http://localhost:8000/api/health` returns `{"status":"ok"}`.
+- [ ] API health returns `{"status":"ok"}` (hosted or local URL above).
+- [ ] `…/api/persistence` shows `postgres_enabled` / `redis_enabled` true (hosted); Splunk fields show `splunk_attached: true` after `wire_splunk.sh`.
 - [ ] App loads and header shows a green **Live** dot.
 - [ ] Scenario controller opens (**⌘⇧E**).
 - [ ] Run one full flow end-to-end once (see §4), then **Reset Demo**.
-- [ ] If showing Splunk: a phase is active and `index=eventshield_* earliest=-15m | stats count by source` returns all 7 sources.
-- [ ] If showing live AI: Ollama is running and warmed (ask one throwaway question), then decide fallback ON/OFF.
+- [ ] If showing Splunk: a phase is active and `index=eventshield_* earliest=-15m | stats count by source` returns events (local Splunk Web).
+- [ ] If showing live AI: toggle fallback OFF once; hosted uses Groq, local may use Ollama — confirm an answer, then set fallback for the talk.
 - [ ] Screen mirroring / projector resolution checked; controller reachable on the presentation display.
-
 ---
 
 ## 2. The interface
@@ -318,11 +360,19 @@ cd backend && .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
 
 **Check all integrations at once**
 ```bash
+# Hosted
+curl -s https://api--eventshield-backend--nqtdqq6465jh.code.run/api/persistence
+# Local
 curl -s http://localhost:8000/api/persistence
 ```
-Shows `postgres_enabled`, `redis_enabled`, fail counts, and row counts. Everything
-here is **best-effort** — if Postgres/Redis/Splunk are down, the live demo still
-runs entirely in memory. They can never break the presentation.
+Shows `postgres_enabled`, `redis_enabled`, Splunk attach status, fail counts, and
+row counts. Everything here is **best-effort** — if Postgres/Redis/Splunk are down,
+the live demo still runs entirely in memory. They can never break the presentation.
+
+**Hosted Splunk not receiving events**
+- Confirm `./scripts/wire_splunk.sh` is still running (tunnel alive).
+- `…/api/admin/splunk` should show `splunk_attached: true`.
+- Re-run the wire script if the laptop slept or the tunnel dropped.
 
 **Splunk shows no events**
 - Confirm indexes exist (Splunk Web → Settings → Indexes → the 7 `eventshield_*`).
@@ -332,11 +382,11 @@ runs entirely in memory. They can never break the presentation.
   UI, or switch `SPLUNK_LICENSE_URI: Free` → `Free-Trial` in `docker-compose.yml`
   and recreate the container + volume.
 
-**Live AI (Ollama) falls back every time**
-- Make sure Ollama is running: `ollama serve`, and the model exists: `ollama pull llama3.2`.
-- Cold start is ~10s; the backend warms the model at startup and keeps it resident
-  (`keep_alive`), with a 12s timeout. If you restarted Ollama, ask one throwaway
-  question to warm it before going live.
+**Live AI falls back every time**
+- Hosted: Groq is configured on Northflank (`LLM_PROVIDER=openai` + Groq base URL).
+  Confirm the API key is set; toggle fallback OFF and ask once.
+- Local Ollama: `ollama serve`, `ollama pull` your model. Cold start can be ~10s+;
+  ask one throwaway question to warm before going live.
 
 **Port already in use**
 ```bash
@@ -345,7 +395,13 @@ lsof -ti :3000 || echo free    # frontend
 ```
 
 **Reset to a clean slate**
-- Controller → **Reset Demo**, or `curl -X POST http://localhost:8000/api/admin/reset`.
+- Controller → **Reset Demo**, or:
+  ```bash
+  # Hosted
+  curl -X POST https://api--eventshield-backend--nqtdqq6465jh.code.run/api/admin/reset
+  # Local
+  curl -X POST http://localhost:8000/api/admin/reset
+  ```
 
 ---
 
@@ -362,8 +418,11 @@ lsof -ti :3000 || echo free    # frontend
 | `SPLUNK_ENABLED` | best-effort HEC publish |
 | `DEMO_SEED` | deterministic synthetic randomization |
 
-To use OpenAI instead of Ollama: set `LLM_PROVIDER=openai`, `OPENAI_API_KEY=sk-...`,
-`LLM_MODEL=gpt-4o-mini`, then restart the backend.
+Hosted production uses Groq via the OpenAI-compatible settings
+(`OPENAI_BASE_URL=https://api.groq.com/openai/v1`). Locally, use Ollama or set
+`LLM_PROVIDER=openai` + `OPENAI_API_KEY` and restart the backend.
+
+Laptop attach to hosted API: see `.env.hosted.example` and `./scripts/wire_splunk.sh`.
 
 ---
 

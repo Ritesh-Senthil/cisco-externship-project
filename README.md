@@ -21,14 +21,19 @@ Then open **http://localhost:3000**.
 
 ### Hosted demo (free tiers)
 
-UI + API + Postgres + Redis + Groq can run fully online. Splunk stays local Docker and attaches via tunnel:
-
-1. Follow [docs/DEPLOY_FREE.md](docs/DEPLOY_FREE.md) (Vercel + Northflank + Upstash + Groq).
-2. On any laptop: `cp .env.hosted.example .env.hosted`, fill API URL + admin token, then:
+UI + API + Postgres + Redis + Groq stay online. On a **new laptop** you only need
+Docker + Splunk attach (optional if you are not showing Splunk evidence):
 
 ```bash
+git clone https://github.com/Ritesh-Senthil/cisco-externship-project.git
+cd cisco-externship-project
+# Install Docker Desktop + cloudflared, then:
+cp .env.hosted.example .env.hosted   # set EVENTSHIELD_API_BASE + DEMO_ADMIN_TOKEN
 ./scripts/wire_splunk.sh
 ```
+
+Open **https://eventshield-steel.vercel.app**.  
+Step-by-step: [docs/DEMO_MANUAL.md](docs/DEMO_MANUAL.md) §1 · cloud setup: [docs/DEPLOY_FREE.md](docs/DEPLOY_FREE.md).
 
 ### Manual start
 

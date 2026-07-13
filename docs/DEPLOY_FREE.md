@@ -19,6 +19,24 @@ Browser → Vercel UI → Northflank API/WSS → Postgres + Redis + Groq
               Cloudflare Tunnel → laptop Docker Splunk (:8001 Web / :8088 HEC)
 ```
 
+## New laptop (presenter machine)
+
+Cloud stack stays up. On any new computer:
+
+1. Install **Docker Desktop** and start it.
+2. Install **cloudflared**: `brew install cloudflare/cloudflare/cloudflared`
+3. Clone this repo.
+4. `cp .env.hosted.example .env.hosted` and set:
+   - `EVENTSHIELD_API_BASE=https://api--eventshield-backend--nqtdqq6465jh.code.run`
+   - `DEMO_ADMIN_TOKEN` (must match Northflank)
+5. Run `./scripts/wire_splunk.sh` (leave running).
+6. Open **https://eventshield-steel.vercel.app**  
+   Splunk Web: http://localhost:8001 (`admin` / `EventShield1!`)
+
+No local Postgres, Redis, Python backend, or `npm` required. If you skip Splunk, only step 6 is needed.
+
+Presenter-oriented copy also lives in [DEMO_MANUAL.md](./DEMO_MANUAL.md) §1.
+
 ## 1. Backend on Northflank
 
 1. Create a Sandbox project.
