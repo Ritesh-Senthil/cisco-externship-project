@@ -185,6 +185,27 @@ async def catalyst_status() -> Any:
     return catalyst.status()
 
 
+@router.post("/admin/catalyst/enable")
+async def catalyst_enable(
+    x_demo_admin_token: str | None = Header(default=None, alias="X-Demo-Admin-Token"),
+) -> Any:
+    """Turn the live Catalyst control-plane on at runtime (no redeploy needed)."""
+    _require_demo_admin(x_demo_admin_token)
+    status = await catalyst.enable()
+    await store.log_action(runtime.phase.value, "catalyst_enable", status.get("note") or "ok")
+    return {"ok": True, **status}
+
+
+@router.post("/admin/catalyst/disable")
+async def catalyst_disable(
+    x_demo_admin_token: str | None = Header(default=None, alias="X-Demo-Admin-Token"),
+) -> Any:
+    _require_demo_admin(x_demo_admin_token)
+    status = await catalyst.disable()
+    await store.log_action(runtime.phase.value, "catalyst_disable", "ok")
+    return {"ok": True, **status}
+
+
 @router.get("/admin/splunk")
 async def splunk_status() -> Any:
     return splunk.status()

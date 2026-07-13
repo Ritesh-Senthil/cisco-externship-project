@@ -46,10 +46,10 @@ async def demo_loop() -> None:
 
 async def catalyst_loop() -> None:
     """Poll Cisco Catalyst Center on its own cadence. Fully independent of the demo
-    loop so a slow/failed sandbox call can never stall event generation."""
+    loop so a slow/failed sandbox call can never stall event generation. Always runs
+    so a runtime enable (/api/admin/catalyst/enable) is picked up without a redeploy;
+    refresh() no-ops while Catalyst is disabled."""
     settings = get_settings()
-    if not settings.catalyst_live:
-        return
     # Prime once at startup so the badge is populated before the first poll interval.
     await catalyst.refresh()
     while True:

@@ -80,17 +80,30 @@ class CatalystCenter:
         self._ai_issue_count: int | None = None
         self._top_ai_issue: str | None = None
         self._note: str = "standby"
+        # Runtime override set via /api/admin/catalyst/enable|disable so the hosted
+        # demo can flip Catalyst live without a redeploy. None = follow env flag.
+        self._live_override: bool | None = None
 
-    async def start(self) -> None:
-        settings = get_settings()
-        if not settings.catalyst_live:
-            self._note = "disabled (CATALYST_LIVE=false)"
+    def is_live(self) -> bool:
+        if self._live_override is not None:
+            return self._live_override
+        return get_settings().catalyst_live
+
+    async def _ensure_client(self) -> None:
+        if self._client is not None:
             return
+        settings = get_settings()
         self._client = httpx.AsyncClient(
             base_url=settings.catalyst_base_url.rstrip("/"),
             timeout=settings.catalyst_timeout_seconds,
             verify=settings.catalyst_verify_ssl,
         )
+
+    async def start(self) -> None:
+        if not self.is_live():
+            self._note = "disabled (CATALYST_LIVE=false)"
+            return
+        await self._ensure_client()
         self._note = "starting"
 
     async def stop(self) -> None:
@@ -98,9 +111,31 @@ class CatalystCenter:
             await self._client.aclose()
             self._client = None
 
+    async def enable(self) -> dict[str, Any]:
+        """Turn Catalyst live at runtime (admin-guarded). Primes an immediate poll."""
+        self._live_override = True
+        self._token = None
+        self.reset_circuit()
+        await self._ensure_client()
+        self._note = "starting"
+        await self.refresh()
+        logger.info("Catalyst Center enabled at runtime (connected=%s)", self._connected)
+        return self.status()
+
+    async def disable(self) -> dict[str, Any]:
+        self._live_override = False
+        self._connected = False
+        self._note = "disabled (runtime)"
+        await self.stop()
+        logger.info("Catalyst Center disabled at runtime")
+        return self.status()
+
+    def reset_circuit(self) -> None:
+        self._fail_count = 0
+
     @property
     def live(self) -> bool:
-        return get_settings().catalyst_live
+        return self.is_live()
 
     async def _auth(self) -> str | None:
         settings = get_settings()
@@ -142,8 +177,10 @@ class CatalystCenter:
 
     async def refresh(self) -> None:
         """Poll the sandbox once. Never raises; updates cached state + circuit."""
-        settings = get_settings()
-        if not settings.catalyst_live or not self._client:
+        if not self.is_live():
+            return
+        await self._ensure_client()
+        if not self._client:
             return
         try:
             health = await self._get("/dna/intent/api/v1/network-health")
@@ -178,10 +215,11 @@ class CatalystCenter:
     def status(self) -> dict[str, Any]:
         """Cheap, cached status for the snapshot / Evidence drawer badge."""
         settings = get_settings()
+        live = self.is_live()
         return {
-            "live": settings.catalyst_live,
+            "live": live,
             "connected": self._connected,
-            "host": _host(settings.catalyst_base_url) if settings.catalyst_live else None,
+            "host": _host(settings.catalyst_base_url) if live else None,
             "device_count": self._device_count,
             "network_health_score": self._health_score,
             "ai_issue_count": self._ai_issue_count,
