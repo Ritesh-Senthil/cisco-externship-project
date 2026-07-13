@@ -117,7 +117,13 @@ class Store:
         try:
             import redis.asyncio as redis  # local import
 
-            self._redis = redis.from_url(settings.redis_url, socket_timeout=2.0)
+            # Upstash and other TLS Redis use rediss:// — from_url handles SSL.
+            self._redis = redis.from_url(
+                settings.redis_url,
+                socket_timeout=2.0,
+                socket_connect_timeout=3.0,
+                decode_responses=False,
+            )
             await asyncio.wait_for(self._redis.ping(), timeout=3.0)
             self.redis_enabled = True
             logger.info("Redis fanout connected.")
@@ -272,12 +278,15 @@ class Store:
                         counts[tbl] = await conn.fetchval(f"SELECT count(*) FROM {tbl}")
             except Exception as exc:  # noqa: BLE001
                 counts["error"] = str(exc)
+        from app.integrations.splunk import splunk
+
         return {
             "postgres_enabled": self.pg_enabled,
             "redis_enabled": self.redis_enabled,
             "pg_fail_count": self._pg_fail,
             "redis_fail_count": self._redis_fail,
             "row_counts": counts,
+            **splunk.status(),
         }
 
 

@@ -24,13 +24,24 @@ export function useEventShield() {
     let cancelled = false;
     let retry: ReturnType<typeof setTimeout> | undefined;
 
+    let heartbeat: ReturnType<typeof setInterval> | undefined;
+
     const connect = () => {
       const ws = new WebSocket(WS_URL);
       wsRef.current = ws;
       ws.onopen = () => {
         if (!cancelled) setConnected(true);
+        heartbeat = setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send("ping");
+          }
+        }, 20000);
       };
       ws.onclose = () => {
+        if (heartbeat) {
+          clearInterval(heartbeat);
+          heartbeat = undefined;
+        }
         if (!cancelled) {
           setConnected(false);
           retry = setTimeout(connect, 1500);
@@ -39,6 +50,11 @@ export function useEventShield() {
       ws.onmessage = (evt) => {
         try {
           const msg = JSON.parse(evt.data);
+          if (msg.type === "ping") {
+            ws.send("ping");
+            return;
+          }
+          if (msg.type === "pong") return;
           if (msg.type === "snapshot" && msg.data) {
             setSnapshot(msg.data as ScenarioSnapshot);
           }
@@ -55,6 +71,7 @@ export function useEventShield() {
     return () => {
       cancelled = true;
       if (retry) clearTimeout(retry);
+      if (heartbeat) clearInterval(heartbeat);
       wsRef.current?.close();
     };
   }, [refresh]);

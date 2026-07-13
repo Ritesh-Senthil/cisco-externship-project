@@ -4,14 +4,18 @@ from __future__ import annotations
 
 import asyncio
 import json
+import secrets
 from typing import Any
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Header, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.encoders import jsonable_encoder
+from pydantic import BaseModel, Field
 
 from app.ai.orchestrator import ask_llm
+from app.core.config import get_settings
 from app.engines.intelligence import evaluate_readiness, incident_plan, preopening_plan
 from app.engines.snapshot import build_snapshot
+from app.integrations.splunk import splunk
 from app.integrations.store import store
 from app.models.schemas import AiQuestionRequest
 from app.scenario import controller
@@ -51,6 +55,22 @@ class Hub:
 hub = Hub()
 
 
+class SplunkAttachBody(BaseModel):
+    hec_url: str = Field(..., min_length=8)
+    hec_token: str = ""
+    verify_ssl: bool = False
+
+
+def _require_demo_admin(x_demo_admin_token: str | None) -> None:
+    expected = get_settings().demo_admin_token
+    if not expected:
+        # Local demo: open. Hosted deploys must set DEMO_ADMIN_TOKEN.
+        return
+    provided = x_demo_admin_token or ""
+    if not secrets.compare_digest(provided, expected):
+        raise HTTPException(status_code=401, detail="invalid or missing X-Demo-Admin-Token")
+
+
 @router.get("/health")
 async def health() -> dict[str, str]:
     return {"status": "ok", "service": "eventshield"}
@@ -58,7 +78,7 @@ async def health() -> dict[str, str]:
 
 @router.get("/persistence")
 async def persistence() -> Any:
-    """Evidence that Postgres/Redis are really wired (best-effort integration)."""
+    """Evidence that Postgres/Redis/Splunk are really wired (best-effort integration)."""
     return await store.health()
 
 
@@ -158,6 +178,37 @@ async def reject_incident() -> Any:
     return result
 
 
+@router.get("/admin/splunk")
+async def splunk_status() -> Any:
+    return splunk.status()
+
+
+@router.post("/admin/splunk/attach")
+async def splunk_attach(
+    body: SplunkAttachBody,
+    x_demo_admin_token: str | None = Header(default=None, alias="X-Demo-Admin-Token"),
+) -> Any:
+    """Point the cloud (or local) backend HEC at a tunnel URL for laptop Splunk."""
+    _require_demo_admin(x_demo_admin_token)
+    status = await splunk.attach(
+        hec_url=body.hec_url,
+        hec_token=body.hec_token,
+        verify_ssl=body.verify_ssl,
+    )
+    await store.log_action(runtime.phase.value, "splunk_attach", status.get("splunk_hec_host") or "ok")
+    return {"ok": True, **status}
+
+
+@router.post("/admin/splunk/detach")
+async def splunk_detach(
+    x_demo_admin_token: str | None = Header(default=None, alias="X-Demo-Admin-Token"),
+) -> Any:
+    _require_demo_admin(x_demo_admin_token)
+    status = await splunk.detach()
+    await store.log_action(runtime.phase.value, "splunk_detach", "ok")
+    return {"ok": True, **status}
+
+
 @router.post("/admin/{action}")
 async def admin_action(action: str) -> Any:
     fn = controller.ADMIN_ACTIONS.get(action)
@@ -182,9 +233,11 @@ async def stream(ws: WebSocket) -> None:
             )
         )
         while True:
-            # Keep alive; client may send pings
+            # Keep alive across hosted proxies; client may send pong/ping.
             try:
-                await asyncio.wait_for(ws.receive_text(), timeout=30)
+                msg = await asyncio.wait_for(ws.receive_text(), timeout=25)
+                if msg in ("ping", '{"type":"ping"}'):
+                    await ws.send_text(json.dumps({"type": "pong"}))
             except asyncio.TimeoutError:
                 await ws.send_text(json.dumps({"type": "ping"}))
     except WebSocketDisconnect:

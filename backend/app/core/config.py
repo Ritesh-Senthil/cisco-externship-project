@@ -33,6 +33,10 @@ class Settings(BaseSettings):
     splunk_hec_verify_ssl: bool = False
     splunk_enabled: bool = True
 
+    # Protects /api/admin/splunk/* attach|detach. Empty = open (local demo only).
+    # Hosted deploys MUST set a non-empty token.
+    demo_admin_token: str = ""
+
     demo_seed: int = 42
 
     @property

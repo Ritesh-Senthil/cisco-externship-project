@@ -19,6 +19,17 @@ Detect → Understand → Recommend → Approve → Act → Verify
 
 Then open **http://localhost:3000**.
 
+### Hosted demo (free tiers)
+
+UI + API + Postgres + Redis + Groq can run fully online. Splunk stays local Docker and attaches via tunnel:
+
+1. Follow [docs/DEPLOY_FREE.md](docs/DEPLOY_FREE.md) (Vercel + Northflank + Upstash + Groq).
+2. On any laptop: `cp .env.hosted.example .env.hosted`, fill API URL + admin token, then:
+
+```bash
+./scripts/wire_splunk.sh
+```
+
 ### Manual start
 
 ```bash
@@ -104,6 +115,7 @@ Approval cards support **Approve Plan** and **Reject** only (no Modify UI). For 
 | Doc | Purpose |
 |---|---|
 | [docs/DEMO_MANUAL.md](docs/DEMO_MANUAL.md) | Presenter manual — flow, controls, Q&A, troubleshooting |
+| [docs/DEPLOY_FREE.md](docs/DEPLOY_FREE.md) | Free-tier cloud host + local Splunk wire-up |
 | [docs/IMPROVEMENTS.md](docs/IMPROVEMENTS.md) | Remaining setup checklist |
 | [docs/SPLUNK_SETUP.md](docs/SPLUNK_SETUP.md) | HEC indexes and verification |
 | [docs/EventShield_Demo_Design_Scope_Architecture.md](docs/EventShield_Demo_Design_Scope_Architecture.md) | Original design / architecture spec |

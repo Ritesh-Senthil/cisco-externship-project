@@ -39,6 +39,18 @@ When healthy:
 **Login:** `admin` / `EventShield1!`  
 **HEC token:** `eventshield-hec-token-change-me` (must match `.env`)
 
+## Attach to a hosted (cloud) backend
+
+If the API runs on Northflank/Vercel stack, use the wire script so laptop Splunk receives HEC from the cloud:
+
+```bash
+cp .env.hosted.example .env.hosted   # set EVENTSHIELD_API_BASE + DEMO_ADMIN_TOKEN
+brew install cloudflare/cloudflare/cloudflared
+./scripts/wire_splunk.sh
+```
+
+Details: [DEPLOY_FREE.md](./DEPLOY_FREE.md).
+
 ## Verify HEC
 
 ```bash
