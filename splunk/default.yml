@@ -1,0 +1,41 @@
+splunk:
+  conf:
+    - key: inputs
+      value:
+        http:
+          disabled: 0
+          enableSSL: 1
+        http://eventshield:
+          disabled: 0
+          token: eventshield-hec-token-change-me
+          index: main
+    - key: indexes
+      value:
+        eventshield_network:
+          homePath: $SPLUNK_DB/eventshield_network/db
+          coldPath: $SPLUNK_DB/eventshield_network/colddb
+          thawedPath: $SPLUNK_DB/eventshield_network/thaweddb
+        eventshield_ticketing:
+          homePath: $SPLUNK_DB/eventshield_ticketing/db
+          coldPath: $SPLUNK_DB/eventshield_ticketing/colddb
+          thawedPath: $SPLUNK_DB/eventshield_ticketing/thaweddb
+        eventshield_transport:
+          homePath: $SPLUNK_DB/eventshield_transport/db
+          coldPath: $SPLUNK_DB/eventshield_transport/colddb
+          thawedPath: $SPLUNK_DB/eventshield_transport/thaweddb
+        eventshield_gate_ops:
+          homePath: $SPLUNK_DB/eventshield_gate_ops/db
+          coldPath: $SPLUNK_DB/eventshield_gate_ops/colddb
+          thawedPath: $SPLUNK_DB/eventshield_gate_ops/thaweddb
+        eventshield_crowd:
+          homePath: $SPLUNK_DB/eventshield_crowd/db
+          coldPath: $SPLUNK_DB/eventshield_crowd/colddb
+          thawedPath: $SPLUNK_DB/eventshield_crowd/thaweddb
+        eventshield_workflow:
+          homePath: $SPLUNK_DB/eventshield_workflow/db
+          coldPath: $SPLUNK_DB/eventshield_workflow/colddb
+          thawedPath: $SPLUNK_DB/eventshield_workflow/thaweddb
+        eventshield_incidents:
+          homePath: $SPLUNK_DB/eventshield_incidents/db
+          coldPath: $SPLUNK_DB/eventshield_incidents/colddb
+          thawedPath: $SPLUNK_DB/eventshield_incidents/thaweddb

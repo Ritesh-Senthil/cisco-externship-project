@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+:root {
+  /* Cisco-inspired enterprise palette (Momentum/Catalyst translation) */
+  --cisco-blue: #049fd9;
+  --cisco-blue-deep: #0076a5;
+  --cisco-navy: #0d274d;
+  --cisco-slate: #1b1d21;
+  --cisco-chrome: #2d333b;
+  --surface: #eef1f4;
+  --surface-elevated: #ffffff;
+  --border: #d5dce5;
+  --text: #1b1d21;
+  --text-muted: #5c6770;
+  --status-healthy: #2e8b57;
+  --status-watch: #c47f00;
+  --status-critical: #c7362d;
+  --status-info: #049fd9;
+  --shadow: 0 1px 2px rgba(13, 39, 77, 0.06), 0 8px 24px rgba(13, 39, 77, 0.06);
+  --font-sans: var(--font-source-sans);
+  --font-display: var(--font-source-sans);
+}
+
+@theme inline {
+  --color-background: var(--surface);
+  --color-foreground: var(--text);
+  --font-sans: var(--font-source-sans);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(1200px 500px at 10% -10%, rgba(4, 159, 217, 0.08), transparent 55%),
+    radial-gradient(900px 400px at 100% 0%, rgba(13, 39, 77, 0.06), transparent 50%),
+    var(--surface);
+  color: var(--text);
+  font-family: var(--font-source-sans), "Segoe UI", sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(4, 159, 217, 0.25);
+}
