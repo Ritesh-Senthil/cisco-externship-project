@@ -36,7 +36,7 @@ export function IncidentView({
           <div className="font-display text-lg font-bold text-[var(--text)]">No active incident</div>
           <p className="mt-1 max-w-sm text-[13px] text-[var(--text-muted)]">
             Operations nominal. Trigger the Gate 1 scenario from the presenter controls (⌘⇧E) to see the
-            Incident Copilot correlate a live disruption.
+            Crowd &amp; Operations AI correlate a live disruption.
           </p>
         </div>
       </Panel>
@@ -52,7 +52,7 @@ export function IncidentView({
     <div className="space-y-4">
       <div className="grid gap-4 lg:grid-cols-5">
         <div className="space-y-4 lg:col-span-3">
-          <Panel title="Incident Summary" eyebrow="Use Case 2 · Incident Copilot" accent>
+          <Panel title="Incident Summary" eyebrow="Use Case 2 · Crowd & Operations AI" accent>
             <div className="flex flex-wrap items-center gap-3">
               <SeverityDot severity={incident.severity} />
               <h3 className="font-display text-xl font-extrabold tracking-tight text-[var(--text)]">

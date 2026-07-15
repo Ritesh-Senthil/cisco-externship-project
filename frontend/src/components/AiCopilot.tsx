@@ -8,15 +8,15 @@ const USE_CASES = [
   {
     id: "readiness",
     tag: "Use Case 1",
-    title: "Readiness Intelligence",
+    title: "Event Readiness",
     desc: "Forecasts whether the event can open by fusing marginal signals across seven domains into one verdict.",
     phases: ["idle", "pre_opening", "fixes_applied", "ready", "live_event"],
   },
   {
     id: "incident",
     tag: "Use Case 2",
-    title: "Incident Copilot",
-    desc: "Correlates simultaneous failures, isolates root cause, and ranks an approved-playbook response.",
+    title: "Crowd & Operations AI",
+    desc: "Correlates crowd surges and operational failures, isolates root cause, and ranks an approved-playbook response.",
     phases: ["incident", "recovering", "resolved"],
   },
 ];

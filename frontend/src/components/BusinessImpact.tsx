@@ -35,9 +35,9 @@ export function BusinessImpact({ snapshot, history }: { snapshot: ScenarioSnapsh
         </div>
       </div>
       <p className="mt-2 text-[10px] leading-snug text-[var(--text-dim)]">
-        Illustrative model on simulated data · assumes ${m.assumptions.valuePerGuest}/guest blended value (NCSF
-        $16.46M ÷ 900k + on-site spend) and a {Math.round(m.assumptions.balkRate * 100)}% abandonment rate at
-        excessive waits.
+        Illustrative model on simulated data · ${m.assumptions.valuePerGuest}/ticket (per deck; NCSF ~1M attendees,
+        &gt;$10M annual revenue) and a {Math.round(m.assumptions.balkRate * 100)}% abandonment rate at excessive
+        waits.
       </p>
     </div>
   );

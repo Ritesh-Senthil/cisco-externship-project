@@ -4,13 +4,13 @@ import type { ScenarioSnapshot } from "@/lib/types";
 /**
  * Illustrative financial model for the demo. All inputs are simulated; the model
  * is transparent so a finance-minded judge can see exactly how each figure is
- * derived. Public N.C. State Fair figures (900k+ attendees, ~$16.46M division
- * revenue) anchor the per-guest value assumption.
+ * derived. Anchored to the deck's own figures: N.C. State Fair draws ~1M
+ * attendees on >$10M annual revenue, and the deck values a lost admission at
+ * $10/ticket (a 52k attendance drop → $520k lost revenue).
  */
 
-// $16.46M annual division revenue / ~900k attendees ≈ $18 gate value;
-// blended with a conservative ~$14 on-site spend (food, rides) → ~$32/guest.
-const VALUE_PER_GUEST = 32;
+// $10 per ticket — matches the deck's "Why it Matters" revenue math.
+const VALUE_PER_GUEST = 10;
 // Share of queued guests who abandon entry when waits become excessive.
 const BALK_RATE = 0.12;
 

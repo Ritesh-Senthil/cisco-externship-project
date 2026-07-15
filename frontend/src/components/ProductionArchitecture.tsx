@@ -109,6 +109,24 @@ export function ProductionArchitecture() {
             </div>
           </Panel>
 
+          <Panel title="SHIELD Principles" eyebrow="Security & Ethics">
+            <ul className="space-y-1.5 text-[12px] text-[var(--text-muted)]">
+              {[
+                ["S", "Secure Infrastructure"],
+                ["H", "Human Oversight"],
+                ["I", "Input & Model Protection"],
+                ["E", "Ethical Data Use"],
+                ["L", "Licensed Data Only"],
+                ["D", "Designed to Assist Staff"],
+              ].map(([k, v]) => (
+                <li key={k} className="flex items-center gap-2">
+                  <span className="grad-text font-display text-sm font-bold">{k}</span>
+                  <span>{v}</span>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+
           <Callout title="AI stays in its lane" tone="human">
             The AI never computes the authoritative readiness score, sets thresholds, or makes safety-critical
             decisions (gate closure, evacuation, dispatch). It explains evidence and ranks pre-approved playbook
