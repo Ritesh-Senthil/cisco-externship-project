@@ -69,7 +69,7 @@ export default function HomePage() {
           <div className="ml-auto flex items-center gap-2">
             <span
               className="inline-flex items-center gap-1.5 text-[12px] font-medium"
-              style={{ color: es.connected ? "var(--nominal)" : "var(--caution)" }}
+              style={{ color: es.connected ? "var(--nominal)" : "var(--signal-ink)" }}
             >
               <span className={clsx("h-1.5 w-1.5 rounded-full bg-current", es.connected && "pulse-dot")} />
               {es.connected ? "Live" : "Reconnecting"}

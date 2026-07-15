@@ -13,9 +13,9 @@ const ZONES: { id: string; label: string; x: number; y: number; w: number; h: nu
 ];
 
 function palette(status: string) {
-  if (status === "critical") return { fill: "rgba(217,99,92,0.1)", stroke: "#d9635c", text: "#e8a09c" };
-  if (status === "watch") return { fill: "rgba(201,160,69,0.08)", stroke: "#c9a045", text: "#d4bc82" };
-  return { fill: "rgba(66,184,131,0.08)", stroke: "#42b883", text: "#8fd4b5" };
+  if (status === "critical") return { fill: "rgba(201,74,68,0.12)", stroke: "#c94a44", text: "#a33a35" };
+  if (status === "watch") return { fill: "rgba(196,146,42,0.12)", stroke: "#c4922a", text: "#9a7320" };
+  return { fill: "rgba(47,158,106,0.12)", stroke: "#2f9e6a", text: "#247a52" };
 }
 
 export function FairgroundsMap({
@@ -34,7 +34,7 @@ export function FairgroundsMap({
       <svg viewBox="0 0 540 410" className="h-auto w-full" role="img" aria-label="Fairgrounds dependency map">
         <defs>
           <pattern id="grid" width="26" height="26" patternUnits="userSpaceOnUse">
-            <path d="M 26 0 L 0 0 0 26" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+            <path d="M 26 0 L 0 0 0 26" fill="none" stroke="rgba(0,0,0,0.04)" strokeWidth="1" />
           </pattern>
         </defs>
         <rect width="540" height="410" fill="url(#grid)" />
@@ -42,7 +42,7 @@ export function FairgroundsMap({
         <path
           d="M145 300 V250 H330 V196"
           fill="none"
-          stroke={critical ? "#d9635c" : "#4a8ae8"}
+          stroke={critical ? "#c94a44" : "#049fd9"}
           strokeWidth="1.5"
           className="flow-line"
           opacity="0.5"
@@ -50,7 +50,7 @@ export function FairgroundsMap({
         <path
           d="M145 300 V162 H105"
           fill="none"
-          stroke={critical ? "#d9635c" : "#4a8ae8"}
+          stroke={critical ? "#c94a44" : "#049fd9"}
           strokeWidth="1.5"
           className="flow-line"
           opacity="0.35"
@@ -58,7 +58,7 @@ export function FairgroundsMap({
         <path
           d="M145 300 H385 V162"
           fill="none"
-          stroke={critical ? "#d9635c" : "#4a8ae8"}
+          stroke={critical ? "#c94a44" : "#049fd9"}
           strokeWidth="1.5"
           className="flow-line"
           opacity="0.25"
@@ -111,7 +111,7 @@ export function FairgroundsMap({
             </g>
           );
         })}
-        <text x="30" y="400" fontSize="10" fill="#6b7383" fontFamily="var(--font-sans), system-ui, sans-serif">
+        <text x="30" y="400" fontSize="10" fill="#8a8d93" fontFamily="var(--font-sans), system-ui, sans-serif">
           Gate 1 links transit, ticketing, screening & network
         </text>
       </svg>

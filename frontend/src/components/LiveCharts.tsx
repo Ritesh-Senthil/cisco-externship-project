@@ -3,6 +3,11 @@
 import { Area, AreaChart, Line, LineChart, ResponsiveContainer, YAxis } from "recharts";
 import type { MetricPoint } from "@/hooks/useEventShield";
 
+/** Solid hex — Recharts SVG strokes don't reliably resolve CSS variables */
+const CHART_BLUE = "#0066a1";
+const CHART_BLUE_FILL = "rgba(4, 159, 217, 0.28)";
+const CHART_LINE = "#049fd9";
+
 function Spark({
   data,
   dataKey,
@@ -22,7 +27,7 @@ function Spark({
           type="monotone"
           dataKey={dataKey as string}
           stroke={color}
-          strokeWidth={1.5}
+          strokeWidth={2}
           dot={false}
           isAnimationActive={false}
         />
@@ -39,9 +44,9 @@ export function ScoreTrend({ data }: { data: MetricPoint[] }) {
         <Area
           type="monotone"
           dataKey="score"
-          stroke="var(--signal)"
-          strokeWidth={1.5}
-          fill="var(--signal-weak)"
+          stroke={CHART_BLUE}
+          strokeWidth={2}
+          fill={CHART_BLUE_FILL}
           isAnimationActive={false}
           dot={false}
         />
@@ -56,7 +61,7 @@ export function MiniMetric({
   unit,
   data,
   dataKey,
-  color = "var(--ink-3)",
+  color = CHART_LINE,
   domain,
 }: {
   label: string;

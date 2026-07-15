@@ -10,7 +10,7 @@ const THRESHOLDS = [
 
 function toneFor(status: string) {
   if (status === "READY_TO_OPEN") return { color: "var(--nominal)", label: "Operational" };
-  if (status === "CONDITIONAL_OPEN") return { color: "var(--caution)", label: "Conditional" };
+  if (status === "CONDITIONAL_OPEN") return { color: "var(--signal)", label: "Conditional" };
   return { color: "var(--critical)", label: "At risk" };
 }
 

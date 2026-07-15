@@ -1,37 +1,37 @@
 @import "tailwindcss";
 
 /*
- * CaroSHIELD ops console
- * One matte navy hue, borders-only depth, IBM Plex, one azure accent.
+ * CaroSHIELD Cisco light dashboard
+ * White page canvas; blue main panels; blush wells; Cisco Blue accent.
  */
 
 :root {
-  --console: #090b10;
-  --console-2: #0c0e14;
-  --deck: #111419;
-  --deck-raised: #171b22;
-  --deck-inset: #0a0c11;
+  --console: #ffffff;
+  --console-2: #f5f8fb;
+  --deck: #e8f4fb;
+  --deck-raised: #d6eef8;
+  --deck-inset: #f3e8ed;
 
-  --line: rgba(255, 255, 255, 0.07);
-  --line-soft: rgba(255, 255, 255, 0.04);
-  --line-strong: rgba(255, 255, 255, 0.11);
+  --line: rgba(4, 159, 217, 0.16);
+  --line-soft: rgba(4, 159, 217, 0.09);
+  --line-strong: rgba(9, 125, 188, 0.3);
 
-  --ink: #e8ebf0;
-  --ink-2: #9ea6b5;
-  --ink-3: #6b7383;
-  --ink-4: #454c5a;
+  --ink: #1b1c1e;
+  --ink-2: #3d4a54;
+  --ink-3: #6b7a86;
+  --ink-4: #a8b4be;
 
-  --signal: #4a8ae8;
-  --signal-ink: #9ec0f4;
-  --signal-weak: rgba(74, 138, 232, 0.1);
-  --signal-line: rgba(74, 138, 232, 0.28);
+  --signal: #049fd9;
+  --signal-ink: #0066a1;
+  --signal-weak: rgba(4, 159, 217, 0.16);
+  --signal-line: rgba(4, 159, 217, 0.42);
 
-  --nominal: #42b883;
-  --caution: #c9a045;
-  --critical: #d9635c;
-  --nominal-weak: rgba(66, 184, 131, 0.11);
-  --caution-weak: rgba(201, 160, 69, 0.11);
-  --critical-weak: rgba(217, 99, 92, 0.11);
+  --nominal: #1f8a5b;
+  --caution: #c9a84a;
+  --critical: #c94a44;
+  --nominal-weak: rgba(31, 138, 91, 0.14);
+  --caution-weak: rgba(201, 168, 74, 0.14);
+  --critical-weak: rgba(201, 74, 68, 0.12);
 
   --r-xs: 5px;
   --r-sm: 7px;
@@ -72,7 +72,7 @@ textarea {
 }
 
 ::selection {
-  background: rgba(74, 138, 232, 0.25);
+  background: rgba(4, 159, 217, 0.22);
 }
 
 ::-webkit-scrollbar {
@@ -80,13 +80,13 @@ textarea {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.12);
   border-radius: 999px;
   border: 3px solid transparent;
   background-clip: content-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.2);
   background-clip: content-box;
 }
 

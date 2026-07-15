@@ -23,7 +23,7 @@ export function EvidenceDrawer({
 
   return (
     <div className="fixed inset-0 z-40 flex justify-end">
-      <div className="absolute inset-0 bg-black/55" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/35" onClick={onClose} />
       <div className="animate-fade-up relative flex w-full max-w-md flex-col border-l border-[var(--line-strong)] bg-[var(--console-2)]">
         <header className="flex items-center justify-between border-b border-[var(--line)] px-5 py-4">
           <div>
@@ -138,7 +138,7 @@ export function EvidenceDrawer({
                       <span className="ml-auto text-[10px] text-[var(--ink-3)]">{e.eventType}</span>
                     </div>
                     {showRaw ? (
-                      <pre className="tnum mt-1.5 overflow-x-auto rounded bg-black/30 p-2 text-[10px] text-[var(--ink-2)]">
+                      <pre className="tnum mt-1.5 overflow-x-auto rounded bg-[var(--deck-inset)] p-2 text-[10px] text-[var(--ink-2)]">
                         {JSON.stringify(e.metrics, null, 2)}
                       </pre>
                     ) : (

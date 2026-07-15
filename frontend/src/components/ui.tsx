@@ -35,7 +35,7 @@ export function useCountUp(value: number, duration = 650) {
 
 const STATUS: Record<string, { label: string; color: string; weak: string }> = {
   READY_TO_OPEN: { label: "Ready to open", color: "var(--nominal)", weak: "var(--nominal-weak)" },
-  CONDITIONAL_OPEN: { label: "Conditional open", color: "var(--caution)", weak: "var(--caution-weak)" },
+  CONDITIONAL_OPEN: { label: "Conditional open", color: "var(--signal)", weak: "var(--signal-weak)" },
   NOT_READY: { label: "Not ready", color: "var(--critical)", weak: "var(--critical-weak)" },
 };
 
@@ -43,7 +43,7 @@ export function StatusChip({ status, size = "md" }: { status: string; size?: "sm
   const s = STATUS[status] || {
     label: status.replaceAll("_", " ").toLowerCase(),
     color: "var(--ink-2)",
-    weak: "rgba(255,255,255,0.04)",
+    weak: "rgba(0,0,0,0.04)",
   };
   return (
     <span
@@ -65,8 +65,8 @@ export function StatusChip({ status, size = "md" }: { status: string; size?: "sm
 
 export function statusColor(status: string) {
   if (status === "critical" || status === "CRITICAL" || status === "NOT_READY") return "var(--critical)";
-  if (status === "watch" || status === "high" || status === "HIGH" || status === "CONDITIONAL_OPEN")
-    return "var(--caution)";
+  if (status === "CONDITIONAL_OPEN") return "var(--signal)";
+  if (status === "watch" || status === "high" || status === "HIGH") return "var(--caution)";
   if (status === "READY_TO_OPEN" || status === "healthy") return "var(--nominal)";
   return "var(--signal)";
 }

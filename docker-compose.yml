@@ -64,7 +64,7 @@ services:
       # live control-plane badge (requires outbound internet to the DevNet sandbox).
       CATALYST_LIVE: "false"
       CATALYST_BASE_URL: https://sandboxdnac.cisco.com
-      CORS_ORIGINS: http://localhost:3000
+      CORS_ORIGINS: http://localhost:3000,http://localhost:3001
       OLLAMA_BASE_URL: http://host.docker.internal:11434
     extra_hosts:
       - "host.docker.internal:host-gateway"

@@ -101,7 +101,7 @@ export function CommandCenter({
           className="ring-focus card animate-fade-up flex w-full items-center gap-4 px-4 py-3.5 text-left transition-colors hover:border-[var(--line-strong)]"
           style={{ borderColor: "var(--critical-weak)", background: "var(--critical-weak)" }}
         >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--critical)]" style={{ background: "rgba(217,99,92,0.15)" }}>
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--critical)]" style={{ background: "rgba(201,74,68,0.12)" }}>
             <IconAlert />
           </span>
           <div className="min-w-0 flex-1">
