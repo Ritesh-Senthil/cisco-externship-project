@@ -1,24 +1,25 @@
 "use client";
 
+import { EvidenceDrawer } from "@/components/EvidenceDrawer";
+import { ScenarioController } from "@/components/ScenarioController";
 import { CommandCenter } from "@/components/CommandCenter";
 import { DemoArchitecture } from "@/components/DemoArchitecture";
-import { EvidenceDrawer } from "@/components/EvidenceDrawer";
 import { GateDetail } from "@/components/GateDetail";
 import { IncidentView } from "@/components/IncidentView";
 import { ProductionArchitecture } from "@/components/ProductionArchitecture";
 import { ResponseLoop } from "@/components/ResponseLoop";
-import { ScenarioController } from "@/components/ScenarioController";
 import { TimelineView } from "@/components/TimelineView";
+import { IconMenu } from "@/components/icons";
 import { useEventShield } from "@/hooks/useEventShield";
 import clsx from "clsx";
 
 const NAV = [
-  { id: "command", label: "Command Center", group: "ops" },
-  { id: "gate", label: "Gate 1 Detail", group: "ops" },
-  { id: "incident", label: "Active Incident", group: "ops" },
+  { id: "command", label: "Command", group: "ops" },
+  { id: "gate", label: "Gate 1", group: "ops" },
+  { id: "incident", label: "Incident", group: "ops" },
   { id: "timeline", label: "Timeline", group: "ops" },
-  { id: "arch_prod", label: "Production Arch", group: "arch" },
-  { id: "arch_demo", label: "Demo Arch", group: "arch" },
+  { id: "arch_prod", label: "Production", group: "arch" },
+  { id: "arch_demo", label: "Demo stack", group: "arch" },
 ] as const;
 
 export default function HomePage() {
@@ -27,46 +28,37 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
-      {/* Simulated data banner */}
-      <div className="border-b border-[rgba(79,123,255,0.2)] bg-[rgba(79,123,255,0.08)] px-4 py-1 text-center text-[11px] font-medium tracking-wide text-[#a9c0ff]">
-        Simulated data for demonstration purposes.
+      <div className="border-b border-[var(--line)] bg-[var(--console-2)] px-4 py-1 text-center text-[11px] text-[var(--ink-3)]">
+        Simulated data · demonstration environment
       </div>
 
-      {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[rgba(7,11,22,0.82)] backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1640px] items-center gap-4 px-5 py-3">
-          <div className="flex items-center gap-3">
-            <div className="grad-bg flex h-10 w-10 items-center justify-center rounded-xl text-base font-black text-white shadow-[var(--glow)]">
-              CS
-            </div>
-            <div>
-              <div className="font-display text-xl font-extrabold tracking-tight text-[var(--text)]">
-                Caro<span className="grad-text">SHIELD</span>
-              </div>
-              <div className="text-[11px] text-[var(--text-muted)]">N.C. State Fair · Operations Command</div>
-            </div>
+      <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--console)]">
+        <div className="mx-auto flex max-w-[1520px] items-center gap-6 px-5 py-2.5">
+          <div className="shrink-0">
+            <div className="text-[15px] font-semibold tracking-tight text-[var(--ink)]">CaroSHIELD</div>
+            <div className="text-[11px] text-[var(--ink-3)]">N.C. State Fair</div>
           </div>
 
-          <nav className="ml-6 hidden items-center gap-1 lg:flex">
+          <nav className="hidden min-w-0 flex-1 items-center gap-1 lg:flex">
             {NAV.map((item, i) => {
               const active = es.view === item.id;
               const isIncident = item.id === "incident" && !!snap?.active_incident;
               const startsArch = item.group === "arch" && NAV[i - 1]?.group !== "arch";
               return (
-                <div key={item.id} className="flex items-center gap-1">
-                  {startsArch && <span className="mx-1 h-5 w-px bg-[var(--border)]" />}
+                <div key={item.id} className="flex items-center">
+                  {startsArch && <span className="mx-2 h-3.5 w-px bg-[var(--line)]" />}
                   <button
                     onClick={() => es.setView(item.id)}
                     className={clsx(
-                      "relative rounded-lg px-3 py-2 text-[13px] font-semibold transition",
+                      "ring-focus relative px-3 py-2 text-[13px] font-medium transition-colors",
                       active
-                        ? "bg-[var(--accent-soft)] text-[var(--text)]"
-                        : "text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--text)]",
+                        ? "text-[var(--ink)] after:absolute after:inset-x-3 after:bottom-0 after:h-px after:bg-[var(--signal)]"
+                        : "text-[var(--ink-2)] hover:text-[var(--ink)]",
                     )}
                   >
                     {item.label}
                     {isIncident && (
-                      <span className="pulse-dot absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[var(--status-critical)]" />
+                      <span className="pulse-critical absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[var(--critical)]" />
                     )}
                   </button>
                 </div>
@@ -74,47 +66,41 @@ export default function HomePage() {
             })}
           </nav>
 
-          <div className="ml-auto flex items-center gap-2.5 text-[12px]">
+          <div className="ml-auto flex items-center gap-2">
             <span
-              className={clsx(
-                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-semibold",
-                es.connected
-                  ? "border-[rgba(52,211,153,0.35)] text-[var(--status-healthy)]"
-                  : "border-[rgba(251,191,36,0.35)] text-[var(--status-watch)]",
-              )}
+              className="inline-flex items-center gap-1.5 text-[12px] font-medium"
+              style={{ color: es.connected ? "var(--nominal)" : "var(--caution)" }}
             >
               <span className={clsx("h-1.5 w-1.5 rounded-full bg-current", es.connected && "pulse-dot")} />
               {es.connected ? "Live" : "Reconnecting"}
             </span>
             <button
               onClick={() => es.setEvidenceOpen(true)}
-              className="rounded-lg border border-[var(--border-strong)] px-3 py-1.5 font-semibold text-[var(--text-muted)] transition hover:text-[var(--text)]"
-              title="Evidence drawer (⌘⇧D)"
+              className="btn ring-focus hidden sm:inline-flex"
             >
               Evidence
             </button>
             <button
               onClick={() => es.setControllerOpen(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--border-strong)] text-[var(--text-dim)] transition hover:border-[rgba(79,123,255,0.5)] hover:text-[var(--text)]"
+              className="btn btn-icon ring-focus"
               title="Scenario controller (⌘⇧E)"
               aria-label="Open scenario controller"
             >
-              ⋯
+              <IconMenu />
             </button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1640px] space-y-4 px-5 py-4">
+      <main className="mx-auto max-w-[1520px] px-5 py-5">
         {!snap ? (
-          <div className="glass flex min-h-[60vh] flex-col items-center justify-center rounded-2xl text-center">
-            <div className="grad-bg mb-4 h-10 w-10 animate-pulse rounded-xl" />
-            <div className="font-display text-lg font-bold text-[var(--text)]">Connecting to CaroSHIELD…</div>
-            <p className="mt-1 text-[13px] text-[var(--text-muted)]">Establishing live telemetry stream.</p>
+          <div className="card flex min-h-[55vh] flex-col items-center justify-center text-center">
+            <span className="mb-3 h-1.5 w-1.5 rounded-full bg-[var(--signal)] pulse-dot" />
+            <div className="text-[15px] font-semibold text-[var(--ink)]">Connecting</div>
+            <p className="mt-1 text-[13px] text-[var(--ink-2)]">Establishing telemetry stream</p>
           </div>
         ) : (
-          <>
-            {/* Persistent response-loop stepper (operational views only) */}
+          <div className="space-y-5">
             {es.view !== "arch_prod" && es.view !== "arch_demo" && <ResponseLoop phase={snap.phase} />}
 
             {es.view === "command" && (
@@ -144,7 +130,7 @@ export default function HomePage() {
             {es.view === "timeline" && <TimelineView snapshot={snap} />}
             {es.view === "arch_prod" && <ProductionArchitecture />}
             {es.view === "arch_demo" && <DemoArchitecture snapshot={snap} />}
-          </>
+          </div>
         )}
       </main>
 

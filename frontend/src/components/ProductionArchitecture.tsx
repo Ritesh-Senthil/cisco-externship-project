@@ -8,11 +8,9 @@ export function ProductionArchitecture() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.16em] grad-text">How it deploys</div>
-          <h1 className="font-display text-2xl font-extrabold tracking-tight text-[var(--text)]">
-            Production Architecture
-          </h1>
-          <p className="mt-1 max-w-2xl text-[13px] text-[var(--text-muted)]">
+          <div className="label-caps text-[var(--signal-ink)]">How it deploys</div>
+          <h1 className="text-[22px] font-semibold tracking-tight text-[var(--ink)]">Production architecture</h1>
+          <p className="mt-1 max-w-2xl text-[13px] text-[var(--ink-2)]">
             In production, CaroSHIELD rides entirely on the Cisco stack — turning device, network, identity, and
             transport telemetry into one readiness verdict, then executing only human-approved, non-safety-critical
             actions.
@@ -20,11 +18,10 @@ export function ProductionArchitecture() {
         </div>
         <Legend
           items={[
-            { dot: "#4f7bff", label: "Cisco product" },
-            { dot: "#22a7f0", label: "Operational feed" },
-            { dot: "#8b5cf6", label: "CaroSHIELD engine" },
-            { dot: "#fbbf24", label: "Human-in-command" },
-            { dot: "#34d399", label: "Approved action" },
+            { dot: "var(--signal)", label: "Cisco / CaroSHIELD platform" },
+            { dot: "var(--ink-3)", label: "Operational feed" },
+            { dot: "var(--caution)", label: "Human-in-command" },
+            { dot: "var(--nominal)", label: "Approved action" },
           ]}
         />
       </div>
@@ -76,13 +73,13 @@ export function ProductionArchitecture() {
 
           <FlowArrow label="recommend → require approval" />
 
-          <ArchLayer index={4} title="Human-in-Command" desc="No action executes without sign-off" tone="#fbbf24">
+          <ArchLayer index={4} title="Human-in-Command" desc="No action executes without sign-off" tone="var(--caution)">
             <ArchNode kind="human" title="Ops Director Approval Gate" sub="Approve / reject every recommended plan; full audit trail" />
           </ArchLayer>
 
           <FlowArrow label="execute approved actions only" />
 
-          <ArchLayer index={5} title="Action & Coordination" desc="Approved connectors — operational, never safety-critical" tone="#34d399">
+          <ArchLayer index={5} title="Action & Coordination" desc="Approved connectors — operational, never safety-critical" tone="var(--nominal)">
             <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
               <ArchNode kind="action" title="Webex" sub="Incident room" />
               <ArchNode kind="action" title="Digital Signage" sub="Visitor redirect" />
@@ -110,7 +107,7 @@ export function ProductionArchitecture() {
           </Panel>
 
           <Panel title="SHIELD Principles" eyebrow="Security & Ethics">
-            <ul className="space-y-1.5 text-[12px] text-[var(--text-muted)]">
+            <ul className="space-y-1.5 text-[12px] text-[var(--ink-2)]">
               {[
                 ["S", "Secure Infrastructure"],
                 ["H", "Human Oversight"],
@@ -120,7 +117,7 @@ export function ProductionArchitecture() {
                 ["D", "Designed to Assist Staff"],
               ].map(([k, v]) => (
                 <li key={k} className="flex items-center gap-2">
-                  <span className="grad-text font-display text-sm font-bold">{k}</span>
+                  <span className="font-mono w-4 text-[13px] font-semibold text-[var(--signal-ink)]">{k}</span>
                   <span>{v}</span>
                 </li>
               ))}

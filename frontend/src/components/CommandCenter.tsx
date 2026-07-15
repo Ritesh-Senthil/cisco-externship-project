@@ -1,6 +1,7 @@
 "use client";
 
-import { Panel, SeverityDot, StatusChip, useCountUp } from "@/components/ui";
+import { Btn, Panel, SeverityDot, StatusChip, useCountUp } from "@/components/ui";
+import { IconAlert, IconChevron } from "@/components/icons";
 import { FairgroundsMap } from "@/components/FairgroundsMap";
 import { ReadinessGauge } from "@/components/ReadinessGauge";
 import { MiniMetric, ScoreTrend } from "@/components/LiveCharts";
@@ -41,144 +42,105 @@ export function CommandCenter({
   const depsAtRisk = useCountUp(r.critical_dependencies_at_risk, 500);
 
   return (
-    <div className="space-y-4">
-      {/* Row A — hero */}
-      <div className="grid gap-4 xl:grid-cols-12">
-        <Panel title="Event Readiness" eyebrow={snapshot.demo_clock} className="xl:col-span-4" accent>
-          <div className="flex flex-col items-center">
+    <div className="space-y-5">
+      {/* Hero — asymmetric: readiness dominates left, trend fills center */}
+      <section className="card overflow-hidden">
+        <div className="grid lg:grid-cols-[minmax(280px,340px)_1fr]">
+          <div className="border-b border-[var(--line)] p-5 lg:border-b-0 lg:border-r">
+            <div className="label-caps mb-4">{snapshot.demo_clock} · Event readiness</div>
             <ReadinessGauge score={r.score} status={r.status} confidence={r.confidence} />
-            <div className="mt-3">
-              <StatusChip status={r.status} size="lg" />
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <StatusChip status={r.status} />
+              <div className="text-right">
+                <div className="label">Dependencies at risk</div>
+                <div
+                  className="font-mono tnum text-[15px] font-semibold"
+                  style={{ color: r.critical_dependencies_at_risk > 0 ? "var(--caution)" : "var(--nominal)" }}
+                >
+                  {Math.round(depsAtRisk)}
+                </div>
+              </div>
             </div>
-            <p className="mt-4 text-center text-[13px] leading-relaxed text-[var(--text-muted)]">{r.insight}</p>
+            <p className="mt-4 text-[13px] leading-relaxed text-[var(--ink-2)]">{r.insight}</p>
           </div>
-          <div className="mt-4 grid grid-cols-3 gap-2">
-            <MiniStat label="Deps at risk" value={Math.round(depsAtRisk)} tone={r.critical_dependencies_at_risk > 0 ? "watch" : "healthy"} />
-            <MiniStat label="Trend" value={f.trend} />
-            <MiniStat label="Confidence" value={`${Math.round(f.confidence * 100)}%`} />
-          </div>
-        </Panel>
 
-        <Panel title="Live Operations" eyebrow="Streaming · 1–2s" className="xl:col-span-5">
-          <div className="mb-3 rounded-xl border border-[var(--border)] bg-white/[0.02] p-3">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-dim)]">
-                Readiness score trend
-              </span>
-              <span className="font-display text-sm font-bold grad-text">{Math.round(r.score)}</span>
+          <div className="flex flex-col p-5">
+            <div className="mb-3 flex items-baseline justify-between">
+              <div>
+                <div className="text-[13px] font-medium text-[var(--ink)]">Live operations</div>
+                <div className="label">Streaming · 1–2s</div>
+              </div>
+              <div className="text-right">
+                <div className="label">Trend</div>
+                <div className="text-[13px] font-medium capitalize text-[var(--ink)]">{f.trend}</div>
+              </div>
             </div>
             <ScoreTrend data={history} />
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            <MiniMetric
-              label="Queue"
-              value={String(f.queue_estimate)}
-              data={history}
-              dataKey="queue"
-              color="#8b5cf6"
-            />
-            <MiniMetric
-              label="Pred. wait"
-              value={String(f.predicted_wait_min)}
-              unit="m"
-              data={history}
-              dataKey="wait"
-              color="#22a7f0"
-            />
-            <MiniMetric
-              label="Validation"
-              value={String(r.gate.validation_success)}
-              unit="%"
-              data={history}
-              dataKey="validation"
-              color="#34d399"
-              domain={[60, 100]}
-            />
-          </div>
-        </Panel>
-
-        <Panel title="Critical Blockers" eyebrow="Top risks" className="xl:col-span-3">
-          {r.top_risks.length === 0 ? (
-            <div className="flex h-full min-h-28 flex-col items-center justify-center text-center">
-              <div className="grad-text font-display text-2xl font-extrabold">All clear</div>
-              <p className="mt-1 text-[12px] text-[var(--text-muted)]">No cross-domain blockers detected.</p>
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              <MiniMetric label="Queue" value={String(f.queue_estimate)} data={history} dataKey="queue" />
+              <MiniMetric label="Pred. wait" value={String(f.predicted_wait_min)} unit="m" data={history} dataKey="wait" />
+              <MiniMetric
+                label="Validation"
+                value={String(r.gate.validation_success)}
+                unit="%"
+                data={history}
+                dataKey="validation"
+                domain={[60, 100]}
+              />
             </div>
-          ) : (
-            <ul className="space-y-2.5">
-              {r.top_risks.map((risk) => (
-                <li
-                  key={risk.id}
-                  className="rounded-xl border border-[var(--border)] bg-white/[0.02] p-3 transition hover:border-[var(--border-strong)]"
-                >
-                  <div className="flex items-center gap-2">
-                    <SeverityDot severity={risk.severity} />
-                    <span className="font-display text-[13px] font-bold text-[var(--text)]">{risk.title}</span>
-                  </div>
-                  <p className="mt-1 text-[12px] leading-snug text-[var(--text-muted)]">{risk.summary}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Panel>
-      </div>
+          </div>
+        </div>
+      </section>
 
-      {/* Business / financial impact */}
       <BusinessImpact snapshot={snapshot} history={history} />
 
-      {/* Action banner */}
+      {/* Alerts */}
       {snapshot.active_incident ? (
         <button
           onClick={onIncident}
-          className="grad-border animate-fade-up flex w-full items-center gap-4 rounded-2xl bg-[rgba(251,90,104,0.08)] px-5 py-4 text-left transition hover:bg-[rgba(251,90,104,0.14)]"
+          className="ring-focus card animate-fade-up flex w-full items-center gap-4 px-4 py-3.5 text-left transition-colors hover:border-[var(--line-strong)]"
+          style={{ borderColor: "var(--critical-weak)", background: "var(--critical-weak)" }}
         >
-          <span className="pulse-critical flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[rgba(251,90,104,0.2)] text-xl">
-            ⚠
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--critical)]" style={{ background: "rgba(217,99,92,0.15)" }}>
+            <IconAlert />
           </span>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--status-critical)]">
-                Active Incident · {snapshot.active_incident.state}
-              </span>
+            <div className="label-caps" style={{ color: "var(--critical)" }}>
+              Active incident · {snapshot.active_incident.state}
             </div>
-            <div className="font-display text-base font-bold text-[var(--text)]">{snapshot.active_incident.title}</div>
-            <p className="truncate text-[12px] text-[var(--text-muted)]">{snapshot.active_incident.summary}</p>
+            <div className="text-[15px] font-semibold text-[var(--ink)]">{snapshot.active_incident.title}</div>
+            <p className="truncate text-[12px] text-[var(--ink-2)]">{snapshot.active_incident.summary}</p>
           </div>
-          <span className="grad-text shrink-0 font-display text-sm font-bold">Open response →</span>
+          <span className="flex shrink-0 items-center gap-0.5 text-[13px] font-medium text-[var(--signal-ink)]">
+            Open response <IconChevron />
+          </span>
         </button>
       ) : showPrePlan ? (
-        <div className="grad-border animate-fade-up rounded-2xl bg-[var(--accent-soft)] p-5">
+        <div className="card animate-fade-up p-4" style={{ background: "var(--signal-weak)" }}>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-[0.14em] grad-text">Recommended Response</div>
-              <div className="font-display text-lg font-bold text-[var(--text)]">{preopeningPlan.title}</div>
-              <div className="mt-0.5 text-[12px] text-[var(--text-muted)]">
+              <div className="label-caps text-[var(--signal-ink)]">Recommended response</div>
+              <div className="text-[16px] font-semibold text-[var(--ink)]">{preopeningPlan.title}</div>
+              <div className="label mt-0.5">
                 Risk {preopeningPlan.risk} · {preopeningPlan.expected_recovery} · human approval required
               </div>
             </div>
             <div className="flex gap-2">
-              <button
-                onClick={onRejectPreopening}
-                className="rounded-lg border border-[var(--border-strong)] px-4 py-2 text-[13px] font-semibold text-[var(--text-muted)] transition hover:text-[var(--text)]"
-              >
-                Reject
-              </button>
-              <button
-                onClick={onApprovePreopening}
-                className="grad-bg rounded-lg px-5 py-2 text-[13px] font-bold text-white shadow-[var(--glow)] transition hover:brightness-110"
-              >
-                Approve Plan
-              </button>
+              <Btn onClick={onRejectPreopening}>Reject</Btn>
+              <Btn variant="primary" onClick={onApprovePreopening}>
+                Approve plan
+              </Btn>
             </div>
           </div>
           <ol className="mt-3 grid gap-2 sm:grid-cols-2">
             {preopeningPlan.actions
               .filter((a) => a.selected)
               .map((a, i) => (
-                <li key={a.id} className="flex gap-2 rounded-lg border border-[var(--border)] bg-white/[0.02] px-3 py-2">
-                  <span className="grad-text font-display text-sm font-bold">{i + 1}</span>
+                <li key={a.id} className="well flex gap-2.5 px-3 py-2">
+                  <span className="font-mono tnum text-[13px] font-semibold text-[var(--signal-ink)]">{i + 1}</span>
                   <div>
-                    <div className="text-[13px] font-semibold text-[var(--text)]">{a.title}</div>
-                    <div className="text-[11px] text-[var(--text-muted)]">{a.owner}</div>
+                    <div className="text-[13px] font-medium text-[var(--ink)]">{a.title}</div>
+                    <div className="label">{a.owner}</div>
                   </div>
                 </li>
               ))}
@@ -186,22 +148,39 @@ export function CommandCenter({
         </div>
       ) : null}
 
-      {/* Row B */}
+      {/* Lower band — map gets width, AI + Cisco stack on right */}
       <div className="grid gap-4 xl:grid-cols-12">
         <Panel
-          title="Fairgrounds Dependency Map"
+          title="Fairgrounds map"
           eyebrow="Event topology"
           className="xl:col-span-5"
           action={
-            <button onClick={onGate} className="grad-text text-[13px] font-bold hover:underline">
-              Gate 1 detail →
+            <button onClick={onGate} className="btn btn-ghost ring-focus h-auto px-2 py-1 text-[12px] text-[var(--signal-ink)]">
+              Gate 1 detail <IconChevron className="opacity-70" />
             </button>
           }
         >
           <FairgroundsMap snapshot={snapshot} onSelectGate={onGate} />
         </Panel>
 
-        <div className="xl:col-span-4">
+        <div className="space-y-4 xl:col-span-4">
+          <Panel title="Critical blockers" eyebrow="Top risks">
+            {r.top_risks.length === 0 ? (
+              <p className="py-6 text-[13px] text-[var(--ink-2)]">No cross-domain blockers detected.</p>
+            ) : (
+              <ul className="divide-y divide-[var(--line-soft)]">
+                {r.top_risks.map((risk) => (
+                  <li key={risk.id} className="flex gap-3 py-3 first:pt-0 last:pb-0">
+                    <SeverityDot severity={risk.severity} />
+                    <div>
+                      <div className="text-[13px] font-medium text-[var(--ink)]">{risk.title}</div>
+                      <p className="mt-0.5 text-[12px] leading-snug text-[var(--ink-2)]">{risk.summary}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Panel>
           <AiCopilot
             snapshot={snapshot}
             onAsk={onAsk}
@@ -214,18 +193,6 @@ export function CommandCenter({
         <div className="xl:col-span-3">
           <CiscoTechPanel domainScores={r.domain_scores} />
         </div>
-      </div>
-    </div>
-  );
-}
-
-function MiniStat({ label, value, tone }: { label: string; value: string | number; tone?: "healthy" | "watch" }) {
-  const color = tone === "watch" ? "var(--status-watch)" : tone === "healthy" ? "var(--status-healthy)" : "var(--text)";
-  return (
-    <div className="rounded-xl border border-[var(--border)] bg-white/[0.02] px-3 py-2 text-center">
-      <div className="text-[9px] font-semibold uppercase tracking-[0.12em] text-[var(--text-dim)]">{label}</div>
-      <div className="mt-0.5 font-display text-base font-bold capitalize" style={{ color }}>
-        {value}
       </div>
     </div>
   );

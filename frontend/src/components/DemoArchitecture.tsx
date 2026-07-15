@@ -23,24 +23,24 @@ export function DemoArchitecture({ snapshot }: { snapshot: ScenarioSnapshot }) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.16em] grad-text">What is running right now</div>
-          <h1 className="font-display text-2xl font-extrabold tracking-tight text-[var(--text)]">Demo Architecture</h1>
-          <p className="mt-1 max-w-2xl text-[13px] text-[var(--text-muted)]">
+          <div className="label-caps text-[var(--signal-ink)]">What is running right now</div>
+          <h1 className="text-[22px] font-semibold tracking-tight text-[var(--ink)]">Demo architecture</h1>
+          <p className="mt-1 max-w-2xl text-[13px] text-[var(--ink-2)]">
             Everything on stage is running live — the scoring engine, AI, streaming, and Splunk are real. Only the
             fair&apos;s telemetry and the disruption are simulated, and always labeled.
           </p>
         </div>
         <Legend
           items={[
-            { dot: "#34d399", label: "Real integration" },
-            { dot: "#fbbf24", label: "Simulated (labeled)" },
+            { dot: "var(--nominal)", label: "Real integration" },
+            { dot: "var(--caution)", label: "Simulated (labeled)" },
           ]}
         />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-5">
         <div className="space-y-1.5 lg:col-span-3">
-          <ArchLayer index={1} title="Synthetic Generators" desc="Python · seeded RNG" tone="#fbbf24">
+          <ArchLayer index={1} title="Synthetic Generators" desc="Python · seeded RNG" tone="var(--caution)">
             <ArchNode kind="data" title="Domain event generators" sub="Wireless, ticketing, transit, crowd, screening → normalized event schema" badge="simulated" />
           </ArchLayer>
           <FlowArrow label="tick loop" />
@@ -67,7 +67,7 @@ export function DemoArchitecture({ snapshot }: { snapshot: ScenarioSnapshot }) {
             </div>
           </ArchLayer>
           <FlowArrow label="render" />
-          <ArchLayer index={5} title="Frontend" desc="This interface" tone="#34d399">
+          <ArchLayer index={5} title="Frontend" desc="This interface" tone="var(--nominal)">
             <ArchNode kind="action" title="Next.js 15 · React 19 · Tailwind · Recharts" sub="Command center, gauges, live charts, evidence trace" badge="real" />
           </ArchLayer>
         </div>
@@ -76,20 +76,20 @@ export function DemoArchitecture({ snapshot }: { snapshot: ScenarioSnapshot }) {
           <Panel title="Real vs. Simulated" eyebrow="The honest boundary">
             <ul className="space-y-1.5">
               {REAL_VS_SIM.map((r) => (
-                <li key={r.item} className="flex items-start gap-2.5 rounded-lg border border-[var(--border)] bg-white/[0.02] px-3 py-2">
+                <li key={r.item} className="well flex items-start gap-2.5 px-3 py-2">
                   <span
-                    className="mt-0.5 rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide"
+                    className="mt-0.5 rounded-[var(--r-xs)] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide"
                     style={
                       r.state === "real"
-                        ? { color: "#34d399", background: "rgba(52,211,153,0.12)" }
-                        : { color: "#fbbf24", background: "rgba(251,191,36,0.12)" }
+                        ? { color: "var(--nominal)", background: "var(--nominal-weak)" }
+                        : { color: "var(--caution)", background: "var(--caution-weak)" }
                     }
                   >
                     {r.state === "real" ? "Real" : "Sim"}
                   </span>
                   <div className="min-w-0">
-                    <div className="text-[12.5px] font-semibold text-[var(--text)]">{r.item}</div>
-                    <div className="text-[11px] text-[var(--text-muted)]">{r.note}</div>
+                    <div className="text-[12.5px] font-semibold text-[var(--ink)]">{r.item}</div>
+                    <div className="text-[11px] text-[var(--ink-2)]">{r.note}</div>
                   </div>
                 </li>
               ))}

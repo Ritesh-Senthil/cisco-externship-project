@@ -13,21 +13,17 @@ export function GateDetail({ snapshot, history }: { snapshot: ScenarioSnapshot; 
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[var(--line)] pb-4">
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-dim)]">
-            Device 360 · {snapshot.demo_clock}
-          </div>
-          <h1 className="font-display text-2xl font-extrabold tracking-tight text-[var(--text)]">
-            Gate 1 · Transit Hub
-          </h1>
+          <div className="label-caps">{snapshot.demo_clock} · Device 360</div>
+          <h1 className="text-[22px] font-semibold tracking-tight text-[var(--ink)]">Gate 1 · Transit hub</h1>
         </div>
-        <StatusChip status={snapshot.readiness.status} size="lg" />
+        <StatusChip status={snapshot.readiness.status} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Panel title="Entry Systems" eyebrow="Ticketing & network">
-          <div className="grid grid-cols-2 gap-2.5">
+        <Panel title="Entry systems" eyebrow="Ticketing & network">
+          <div className="grid grid-cols-2 gap-2">
             <Stat label="Scanners online" value={`${g.scanners_online}/${g.scanners_total}`} tone={scannerTone} />
             <Stat label="Validation success" value={`${g.validation_success}%`} tone={g.validation_success >= 90 ? "healthy" : "critical"} />
             <Stat label="Screening lanes" value={`${g.screening_lanes_open}/${g.screening_lanes_total}`} tone={g.screening_lanes_open >= g.screening_lanes_total ? "healthy" : "watch"} />
@@ -39,14 +35,14 @@ export function GateDetail({ snapshot, history }: { snapshot: ScenarioSnapshot; 
           </div>
         </Panel>
 
-        <Panel title="Queue & Arrivals" eyebrow="Forecast engine">
-          <div className="grid grid-cols-2 gap-2.5">
-            <MiniMetric label="Queue" value={String(f.queue_estimate)} data={history} dataKey="queue" color="#8b5cf6" />
-            <MiniMetric label="Pred. wait" value={String(f.predicted_wait_min)} unit="m" data={history} dataKey="wait" color="#22a7f0" />
-            <MiniMetric label="Arrival rate" value={String(f.arrival_rate)} unit="/m" data={history} dataKey="arrival" color="#fbbf24" />
-            <MiniMetric label="Processing" value={String(f.processing_rate)} unit="/m" data={history} dataKey="processing" color="#34d399" />
+        <Panel title="Queue & arrivals" eyebrow="Forecast engine">
+          <div className="grid grid-cols-2 gap-2">
+            <MiniMetric label="Queue" value={String(f.queue_estimate)} data={history} dataKey="queue" />
+            <MiniMetric label="Pred. wait" value={String(f.predicted_wait_min)} unit="m" data={history} dataKey="wait" />
+            <MiniMetric label="Arrival rate" value={String(f.arrival_rate)} unit="/m" data={history} dataKey="arrival" />
+            <MiniMetric label="Processing" value={String(f.processing_rate)} unit="/m" data={history} dataKey="processing" />
           </div>
-          <div className="mt-3 grid grid-cols-1 gap-2.5">
+          <div className="mt-3 space-y-2">
             <Stat
               label="Amtrak"
               value={g.amtrak_delay_min ? `Delayed ${g.amtrak_delay_min}m` : `ETA ${g.amtrak_eta_min ?? "—"}m`}
@@ -59,9 +55,9 @@ export function GateDetail({ snapshot, history }: { snapshot: ScenarioSnapshot; 
               sub={`→ ${g.shuttle_destination.replaceAll("_", " ")} · ${g.shuttle_passengers} pax`}
             />
           </div>
-          <p className="mt-3 text-[12px] leading-relaxed text-[var(--text-muted)]">
-            Forecast uses arrival rate minus effective processing rate (lanes × scanner success × network ×
-            staffing). When arrivals outrun processing, predicted wait climbs before the queue does.
+          <p className="mt-3 text-[12px] leading-relaxed text-[var(--ink-2)]">
+            Forecast uses arrival rate minus effective processing rate. When arrivals outrun processing, predicted wait
+            climbs before the queue does.
           </p>
         </Panel>
       </div>

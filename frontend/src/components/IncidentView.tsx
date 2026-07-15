@@ -1,15 +1,16 @@
 "use client";
 
 import clsx from "clsx";
-import { Panel, Pill, SeverityDot, useCountUp } from "@/components/ui";
+import { Btn, Panel, Pill, SeverityDot, useCountUp } from "@/components/ui";
+import { IconCheck } from "@/components/icons";
 import { MiniMetric } from "@/components/LiveCharts";
 import type { MetricPoint } from "@/hooks/useEventShield";
 import type { ScenarioSnapshot } from "@/lib/types";
 
 const STATE_STYLE: Record<string, string> = {
-  ACTIVE: "text-[var(--status-critical)] border-[rgba(251,90,104,0.4)] bg-[rgba(251,90,104,0.12)]",
-  STABILIZING: "text-[var(--status-watch)] border-[rgba(251,191,36,0.4)] bg-[rgba(251,191,36,0.12)]",
-  RESOLVED: "text-[var(--status-healthy)] border-[rgba(52,211,153,0.4)] bg-[rgba(52,211,153,0.12)]",
+  ACTIVE: "text-[var(--critical)] border-[var(--critical-weak)] bg-[var(--critical-weak)]",
+  STABILIZING: "text-[var(--caution)] border-[var(--caution-weak)] bg-[var(--caution-weak)]",
+  RESOLVED: "text-[var(--nominal)] border-[var(--nominal-weak)] bg-[var(--nominal-weak)]",
 };
 
 export function IncidentView({
@@ -28,15 +29,14 @@ export function IncidentView({
 
   if (!incident) {
     return (
-      <Panel title="Active Incident">
-        <div className="flex flex-col items-center justify-center py-10 text-center">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border-strong)] text-xl text-[var(--status-healthy)]">
-            ✓
-          </div>
-          <div className="font-display text-lg font-bold text-[var(--text)]">No active incident</div>
-          <p className="mt-1 max-w-sm text-[13px] text-[var(--text-muted)]">
-            Operations nominal. Trigger the Gate 1 scenario from the presenter controls (⌘⇧E) to see the
-            Crowd &amp; Operations AI correlate a live disruption.
+      <Panel title="Active incident">
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--nominal-weak)] text-[var(--nominal)]">
+            <IconCheck />
+          </span>
+          <div className="text-[15px] font-semibold text-[var(--ink)]">No active incident</div>
+          <p className="mt-1 max-w-sm text-[13px] text-[var(--ink-2)]">
+            Operations nominal. Trigger the Gate 1 scenario from presenter controls (⌘⇧E).
           </p>
         </div>
       </Panel>
@@ -52,43 +52,36 @@ export function IncidentView({
     <div className="space-y-4">
       <div className="grid gap-4 lg:grid-cols-5">
         <div className="space-y-4 lg:col-span-3">
-          <Panel title="Incident Summary" eyebrow="Use Case 2 · Crowd & Operations AI" accent>
+          <Panel title={incident.title} eyebrow="Use case 2 · Crowd & Operations AI" accent>
             <div className="flex flex-wrap items-center gap-3">
               <SeverityDot severity={incident.severity} />
-              <h3 className="font-display text-xl font-extrabold tracking-tight text-[var(--text)]">
-                {incident.title}
-              </h3>
               <span
                 className={clsx(
-                  "ml-auto rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.1em]",
-                  STATE_STYLE[stateKey] || "border-[var(--border)] text-[var(--text-muted)]",
+                  "ml-auto rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide",
+                  STATE_STYLE[stateKey] || "border-[var(--line)] text-[var(--ink-2)]",
                 )}
               >
                 {incident.state}
               </span>
             </div>
-            <p className="mt-3 text-[14px] leading-relaxed text-[var(--text)]">{incident.summary}</p>
+            <p className="mt-3 text-[14px] leading-relaxed text-[var(--ink)]">{incident.summary}</p>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-xl border border-[var(--border)] bg-white/[0.02] p-3.5">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-dim)]">
-                  Likely cause
-                </div>
-                <p className="mt-1 text-[13px] leading-relaxed text-[var(--text-muted)]">{incident.likely_cause}</p>
+              <div className="well p-3">
+                <div className="label">Likely cause</div>
+                <p className="mt-1 text-[13px] leading-relaxed text-[var(--ink-2)]">{incident.likely_cause}</p>
               </div>
-              <div className="rounded-xl border border-[var(--border)] bg-white/[0.02] p-3.5">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-dim)]">
-                  Correlation confidence
+              <div className="well p-3">
+                <div className="label">Correlation confidence</div>
+                <div className="font-mono tnum mt-1 text-[28px] font-semibold text-[var(--signal-ink)]">
+                  {confidence}%
                 </div>
-                <div className="mt-1 font-display text-3xl font-extrabold grad-text">{confidence}%</div>
               </div>
             </div>
 
             <div className="mt-4">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-dim)]">
-                Affected dependencies
-              </div>
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="label">Affected dependencies</div>
+              <div className="mt-2 flex flex-wrap gap-1.5">
                 {incident.affected_dependencies.map((d) => (
                   <Pill key={d}>{d}</Pill>
                 ))}
@@ -96,70 +89,59 @@ export function IncidentView({
             </div>
           </Panel>
 
-          <Panel title="Live Recovery" eyebrow="Verify">
-            <div className="grid grid-cols-3 gap-2.5">
-              <MiniMetric label="Queue" value={String(snapshot.readiness.forecast.queue_estimate)} data={history} dataKey="queue" color="#8b5cf6" />
-              <MiniMetric label="Pred. wait" value={String(snapshot.readiness.forecast.predicted_wait_min)} unit="m" data={history} dataKey="wait" color="#22a7f0" />
-              <MiniMetric label="Validation" value={String(snapshot.readiness.gate.validation_success)} unit="%" data={history} dataKey="validation" color="#34d399" domain={[60, 100]} />
+          <Panel title="Live recovery" eyebrow="Verify">
+            <div className="grid grid-cols-3 gap-2">
+              <MiniMetric label="Queue" value={String(snapshot.readiness.forecast.queue_estimate)} data={history} dataKey="queue" />
+              <MiniMetric label="Pred. wait" value={String(snapshot.readiness.forecast.predicted_wait_min)} unit="m" data={history} dataKey="wait" />
+              <MiniMetric label="Validation" value={String(snapshot.readiness.gate.validation_success)} unit="%" data={history} dataKey="validation" domain={[60, 100]} />
             </div>
           </Panel>
         </div>
 
         <div className="lg:col-span-2">
-          <Panel title="Response Plan" eyebrow="Approved playbook">
+          <Panel title="Response plan" eyebrow="Approved playbook">
             {plan ? (
               <>
                 <div className="flex items-center gap-2">
                   <Pill tone="accent">Risk {plan.risk}</Pill>
                   <Pill>{plan.expected_recovery}</Pill>
                 </div>
-                <ol className="mt-4 space-y-2">
+                <ol className="mt-3 divide-y divide-[var(--line-soft)]">
                   {plan.actions.map((a, i) => (
-                    <li key={a.id} className="flex gap-2.5 rounded-xl border border-[var(--border)] bg-white/[0.02] p-3">
-                      <span className="grad-text font-display text-sm font-bold">{i + 1}</span>
+                    <li key={a.id} className="flex gap-2.5 py-2.5 first:pt-0 last:pb-0">
+                      <span className="font-mono tnum text-[13px] font-semibold text-[var(--signal-ink)]">{i + 1}</span>
                       <div>
-                        <div className="text-[13px] font-semibold text-[var(--text)]">{a.title}</div>
-                        <div className="text-[11px] text-[var(--text-muted)]">
+                        <div className="text-[13px] font-medium text-[var(--ink)]">{a.title}</div>
+                        <div className="label">
                           {a.owner} · {a.expected_impact}
                         </div>
                       </div>
                     </li>
                   ))}
                 </ol>
-                <div className="mt-4 rounded-xl border border-[rgba(251,191,36,0.35)] bg-[rgba(251,191,36,0.06)] p-3">
-                  <div className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--status-watch)]" />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--status-watch)]">
-                      Excluded by design · human-only
-                    </span>
-                  </div>
-                  <p className="mt-1 text-[11px] leading-snug text-[var(--text-muted)]">
+                <div className="mt-4 rounded-[var(--r-sm)] border border-[var(--caution-weak)] bg-[var(--caution-weak)] p-3">
+                  <div className="text-[11px] font-semibold text-[var(--caution)]">Excluded by design · human-only</div>
+                  <p className="mt-1 text-[11px] leading-snug text-[var(--ink-2)]">
                     CaroSHIELD never recommends gate closure, evacuation, police dispatch, emergency announcements, or
-                    ride shutdown. Safety-critical decisions stay with human commanders.
+                    ride shutdown.
                   </p>
                 </div>
                 {pending ? (
                   <div className="mt-4 flex gap-2">
-                    <button
-                      onClick={onReject}
-                      className="flex-1 rounded-lg border border-[var(--border-strong)] px-3 py-2.5 text-[13px] font-semibold text-[var(--text-muted)] transition hover:text-[var(--text)]"
-                    >
+                    <Btn className="flex-1" onClick={onReject}>
                       Reject
-                    </button>
-                    <button
-                      onClick={onApprove}
-                      className="grad-bg flex-1 rounded-lg px-3 py-2.5 text-[13px] font-bold text-white shadow-[var(--glow)] transition hover:brightness-110"
-                    >
-                      Approve Plan
-                    </button>
+                    </Btn>
+                    <Btn className="flex-1" variant="primary" onClick={onApprove}>
+                      Approve plan
+                    </Btn>
                   </div>
                 ) : (
                   <div
                     className={clsx(
-                      "mt-5 rounded-xl border px-3 py-2.5 text-[13px] font-semibold",
+                      "mt-4 rounded-[var(--r-sm)] border px-3 py-2 text-[13px] font-medium",
                       resolved
-                        ? "border-[rgba(52,211,153,0.4)] bg-[rgba(52,211,153,0.1)] text-[var(--status-healthy)]"
-                        : "border-[var(--border)] bg-white/[0.02] text-[var(--text-muted)]",
+                        ? "border-[var(--nominal-weak)] bg-[var(--nominal-weak)] text-[var(--nominal)]"
+                        : "border-[var(--line)] text-[var(--ink-2)]",
                     )}
                   >
                     Plan status: <span className="capitalize">{plan.status}</span>
@@ -167,7 +149,7 @@ export function IncidentView({
                 )}
               </>
             ) : (
-              <p className="text-[13px] text-[var(--text-muted)]">No plan available.</p>
+              <p className="text-[13px] text-[var(--ink-2)]">No plan available.</p>
             )}
           </Panel>
         </div>

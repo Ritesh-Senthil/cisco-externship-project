@@ -3,7 +3,6 @@
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
 
-/* ---------------- Count-up animated number ---------------- */
 export function useCountUp(value: number, duration = 650) {
   const [display, setDisplay] = useState(value);
   const fromRef = useRef(value);
@@ -34,73 +33,57 @@ export function useCountUp(value: number, duration = 650) {
   return display;
 }
 
-/* ---------------- Status chip ---------------- */
-const STATUS: Record<string, { label: string; text: string; ring: string; bg: string }> = {
-  READY_TO_OPEN: {
-    label: "Ready to Open",
-    text: "text-[var(--status-healthy)]",
-    ring: "border-[rgba(52,211,153,0.4)]",
-    bg: "bg-[rgba(52,211,153,0.12)]",
-  },
-  CONDITIONAL_OPEN: {
-    label: "Conditional Open",
-    text: "text-[var(--status-watch)]",
-    ring: "border-[rgba(251,191,36,0.4)]",
-    bg: "bg-[rgba(251,191,36,0.12)]",
-  },
-  NOT_READY: {
-    label: "Not Ready",
-    text: "text-[var(--status-critical)]",
-    ring: "border-[rgba(251,90,104,0.45)]",
-    bg: "bg-[rgba(251,90,104,0.14)]",
-  },
+const STATUS: Record<string, { label: string; color: string; weak: string }> = {
+  READY_TO_OPEN: { label: "Ready to open", color: "var(--nominal)", weak: "var(--nominal-weak)" },
+  CONDITIONAL_OPEN: { label: "Conditional open", color: "var(--caution)", weak: "var(--caution-weak)" },
+  NOT_READY: { label: "Not ready", color: "var(--critical)", weak: "var(--critical-weak)" },
 };
 
 export function StatusChip({ status, size = "md" }: { status: string; size?: "sm" | "md" | "lg" }) {
   const s = STATUS[status] || {
-    label: status.replaceAll("_", " "),
-    text: "text-[var(--text-muted)]",
-    ring: "border-[var(--border)]",
-    bg: "bg-white/5",
+    label: status.replaceAll("_", " ").toLowerCase(),
+    color: "var(--ink-2)",
+    weak: "rgba(255,255,255,0.04)",
   };
   return (
     <span
       className={clsx(
-        "inline-flex items-center gap-2 rounded-full border font-semibold uppercase tracking-[0.08em]",
-        s.text,
-        s.ring,
-        s.bg,
-        size === "lg" && "px-4 py-1.5 text-sm",
-        size === "md" && "px-3 py-1 text-xs",
-        size === "sm" && "px-2.5 py-0.5 text-[11px]",
+        "inline-flex items-center gap-1.5 rounded-full border font-medium",
+        size === "lg" && "px-3 py-1 text-[13px]",
+        size === "md" && "px-2.5 py-0.5 text-[12px]",
+        size === "sm" && "px-2 py-0.5 text-[11px]",
       )}
+      style={{ color: s.color, borderColor: s.weak, background: s.weak }}
     >
-      <span className={clsx("h-1.5 w-1.5 rounded-full bg-current", status === "NOT_READY" && "pulse-dot")} />
+      <span
+        className={clsx("h-1.5 w-1.5 rounded-full bg-current", status === "NOT_READY" && "pulse-critical")}
+      />
       {s.label}
     </span>
   );
 }
 
 export function statusColor(status: string) {
-  if (status === "critical" || status === "CRITICAL" || status === "NOT_READY") return "var(--status-critical)";
+  if (status === "critical" || status === "CRITICAL" || status === "NOT_READY") return "var(--critical)";
   if (status === "watch" || status === "high" || status === "HIGH" || status === "CONDITIONAL_OPEN")
-    return "var(--status-watch)";
-  if (status === "READY_TO_OPEN" || status === "healthy") return "var(--status-healthy)";
-  return "var(--status-info)";
+    return "var(--caution)";
+  if (status === "READY_TO_OPEN" || status === "healthy") return "var(--nominal)";
+  return "var(--signal)";
 }
 
 export function SeverityDot({ severity }: { severity: string }) {
   const color = statusColor(severity);
-  const critical = severity === "critical" || severity === "CRITICAL";
   return (
     <span
-      className={clsx("inline-block h-2.5 w-2.5 rounded-full", critical && "pulse-dot")}
-      style={{ background: color, boxShadow: `0 0 10px ${color}` }}
+      className={clsx(
+        "inline-block h-[7px] w-[7px] rounded-full",
+        (severity === "critical" || severity === "CRITICAL") && "pulse-critical",
+      )}
+      style={{ background: color }}
     />
   );
 }
 
-/* ---------------- Panel / card ---------------- */
 export function Panel({
   title,
   eyebrow,
@@ -108,6 +91,8 @@ export function Panel({
   action,
   className,
   accent,
+  bodyClassName,
+  flush,
 }: {
   title?: string;
   eyebrow?: string;
@@ -115,28 +100,28 @@ export function Panel({
   action?: React.ReactNode;
   className?: string;
   accent?: boolean;
+  bodyClassName?: string;
+  flush?: boolean;
 }) {
   return (
-    <section className={clsx("glass rounded-2xl", accent && "grad-border", className)}>
+    <section className={clsx("card relative", className)}>
+      {accent && (
+        <span aria-hidden className="absolute bottom-4 left-0 top-4 w-px bg-[var(--signal)]" />
+      )}
       {(title || action) && (
-        <header className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-3.5">
-          <div>
-            {eyebrow && (
-              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-dim)]">
-                {eyebrow}
-              </div>
-            )}
-            <h2 className="font-display text-[15px] font-bold tracking-tight text-[var(--text)]">{title}</h2>
+        <header className="flex items-baseline justify-between gap-3 border-b border-[var(--line)] px-4 py-3">
+          <div className="min-w-0">
+            {eyebrow && <div className="label-caps">{eyebrow}</div>}
+            {title && <h2 className="text-[15px] font-semibold text-[var(--ink)]">{title}</h2>}
           </div>
           {action}
         </header>
       )}
-      <div className="p-5">{children}</div>
+      <div className={clsx(flush ? undefined : "p-4", bodyClassName)}>{children}</div>
     </section>
   );
 }
 
-/* ---------------- Stat tile ---------------- */
 export function Stat({
   label,
   value,
@@ -150,19 +135,19 @@ export function Stat({
 }) {
   const toneColor =
     tone === "healthy"
-      ? "var(--status-healthy)"
+      ? "var(--nominal)"
       : tone === "watch"
-        ? "var(--status-watch)"
+        ? "var(--caution)"
         : tone === "critical"
-          ? "var(--status-critical)"
-          : "var(--text)";
+          ? "var(--critical)"
+          : "var(--ink)";
   return (
-    <div className="rounded-xl border border-[var(--border)] bg-white/[0.02] px-3.5 py-3 transition hover:border-[var(--border-strong)]">
-      <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-dim)]">{label}</div>
-      <div className="mt-1 text-lg font-bold" style={{ color: toneColor }}>
+    <div className="well px-3 py-2.5">
+      <div className="label">{label}</div>
+      <div className="font-mono tnum mt-1 text-[17px] font-semibold leading-none" style={{ color: toneColor }}>
         {value}
       </div>
-      {sub && <div className="mt-0.5 text-[11px] text-[var(--text-muted)]">{sub}</div>}
+      {sub && <div className="mt-1 text-[11px] text-[var(--ink-2)]">{sub}</div>}
     </div>
   );
 }
@@ -171,13 +156,36 @@ export function Pill({ children, tone }: { children: React.ReactNode; tone?: "mu
   return (
     <span
       className={clsx(
-        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium",
+        "inline-flex items-center rounded-full border px-2 py-px text-[11px] font-medium",
         tone === "accent"
-          ? "border-[rgba(79,123,255,0.4)] bg-[var(--accent-soft)] text-[#a9c0ff]"
-          : "border-[var(--border)] bg-white/[0.03] text-[var(--text-muted)]",
+          ? "border-[var(--signal-line)] bg-[var(--signal-weak)] text-[var(--signal-ink)]"
+          : "border-[var(--line)] text-[var(--ink-2)]",
       )}
     >
       {children}
     </span>
+  );
+}
+
+export function Btn({
+  children,
+  variant = "default",
+  className,
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: "default" | "primary" | "ghost";
+}) {
+  return (
+    <button
+      className={clsx(
+        "btn ring-focus",
+        variant === "primary" && "btn-primary",
+        variant === "ghost" && "btn-ghost",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </button>
   );
 }

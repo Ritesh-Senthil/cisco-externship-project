@@ -14,45 +14,38 @@ function Spark({
   color: string;
   domain?: [number | "auto", number | "auto"];
 }) {
-  const id = `grad-${String(dataKey)}`;
   return (
-    <ResponsiveContainer width="100%" height={54}>
-      <AreaChart data={data} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
-        <defs>
-          <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity={0.5} />
-            <stop offset="100%" stopColor={color} stopOpacity={0} />
-          </linearGradient>
-        </defs>
+    <ResponsiveContainer width="100%" height={44}>
+      <LineChart data={data} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
         <YAxis hide domain={domain ?? ["auto", "auto"]} />
-        <Area
+        <Line
           type="monotone"
           dataKey={dataKey as string}
           stroke={color}
-          strokeWidth={2}
-          fill={`url(#${id})`}
-          isAnimationActive={false}
+          strokeWidth={1.5}
           dot={false}
+          isAnimationActive={false}
         />
-      </AreaChart>
+      </LineChart>
     </ResponsiveContainer>
   );
 }
 
 export function ScoreTrend({ data }: { data: MetricPoint[] }) {
   return (
-    <ResponsiveContainer width="100%" height={64}>
-      <LineChart data={data} margin={{ top: 6, right: 4, bottom: 2, left: 4 }}>
+    <ResponsiveContainer width="100%" height={72}>
+      <AreaChart data={data} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
         <YAxis hide domain={[40, 100]} />
-        <Line
+        <Area
           type="monotone"
           dataKey="score"
-          stroke="#4f7bff"
-          strokeWidth={2.5}
-          dot={false}
+          stroke="var(--signal)"
+          strokeWidth={1.5}
+          fill="var(--signal-weak)"
           isAnimationActive={false}
+          dot={false}
         />
-      </LineChart>
+      </AreaChart>
     </ResponsiveContainer>
   );
 }
@@ -63,7 +56,7 @@ export function MiniMetric({
   unit,
   data,
   dataKey,
-  color,
+  color = "var(--ink-3)",
   domain,
 }: {
   label: string;
@@ -71,19 +64,19 @@ export function MiniMetric({
   unit?: string;
   data: MetricPoint[];
   dataKey: keyof MetricPoint;
-  color: string;
+  color?: string;
   domain?: [number | "auto", number | "auto"];
 }) {
   return (
-    <div className="rounded-xl border border-[var(--border)] bg-white/[0.02] p-3">
-      <div className="flex items-baseline justify-between">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-dim)]">{label}</span>
-        <span className="font-display text-base font-bold text-[var(--text)]">
+    <div className="well px-3 py-2.5">
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="label">{label}</span>
+        <span className="font-mono tnum text-[15px] font-semibold text-[var(--ink)]">
           {value}
-          {unit && <span className="ml-0.5 text-[11px] font-medium text-[var(--text-muted)]">{unit}</span>}
+          {unit && <span className="ml-0.5 text-[11px] font-normal text-[var(--ink-2)]">{unit}</span>}
         </span>
       </div>
-      <div className="mt-1">
+      <div className="mt-1.5">
         <Spark data={data} dataKey={dataKey} color={color} domain={domain} />
       </div>
     </div>

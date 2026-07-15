@@ -2,12 +2,19 @@
 
 import { useCountUp } from "@/components/ui";
 
+const THRESHOLDS = [
+  { value: 70, label: "70" },
+  { value: 80, label: "80" },
+  { value: 90, label: "90" },
+];
+
 function toneFor(status: string) {
-  if (status === "READY_TO_OPEN") return { color: "#34d399", label: "OPERATIONAL" };
-  if (status === "CONDITIONAL_OPEN") return { color: "#fbbf24", label: "CAUTION" };
-  return { color: "#fb5a68", label: "AT RISK" };
+  if (status === "READY_TO_OPEN") return { color: "var(--nominal)", label: "Operational" };
+  if (status === "CONDITIONAL_OPEN") return { color: "var(--caution)", label: "Conditional" };
+  return { color: "var(--critical)", label: "At risk" };
 }
 
+/** Signature element: horizontal threshold meter — fair safety-inspection metaphor */
 export function ReadinessGauge({
   score,
   status,
@@ -17,64 +24,59 @@ export function ReadinessGauge({
   status: string;
   confidence: string;
 }) {
-  const animated = useCountUp(score, 800);
+  const animated = useCountUp(score, 700);
   const { color, label } = toneFor(status);
-  const size = 208;
-  const stroke = 14;
-  const r = (size - stroke) / 2;
-  const c = 2 * Math.PI * r;
-  const pct = Math.max(0, Math.min(100, animated)) / 100;
-  // 270-degree arc gauge
-  const arc = 0.75;
-  const dash = c * arc;
-  const offset = dash * (1 - pct);
+  const pct = Math.max(0, Math.min(100, animated));
 
   return (
-    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-[135deg]">
-        <defs>
-          <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor={color} stopOpacity="0.55" />
-            <stop offset="100%" stopColor={color} />
-          </linearGradient>
-        </defs>
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          fill="none"
-          stroke="rgba(148,170,220,0.12)"
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeDasharray={`${dash} ${c}`}
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          fill="none"
-          stroke="url(#gaugeGrad)"
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeDasharray={`${dash} ${c}`}
-          strokeDashoffset={offset}
-          style={{ transition: "stroke-dashoffset 0.8s cubic-bezier(0.22,1,0.36,1)", filter: `drop-shadow(0 0 8px ${color}66)` }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="font-display text-6xl font-extrabold leading-none tracking-tight" style={{ color }}>
-          {Math.round(animated)}
+    <div className="w-full">
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <div
+            className="font-mono tnum text-[52px] font-semibold leading-none tracking-tight"
+            style={{ color }}
+          >
+            {Math.round(animated)}
+          </div>
+          <div className="mt-1 text-[13px] font-medium text-[var(--ink)]">Readiness score</div>
         </div>
-        <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-dim)]">
-          Readiness
+        <div className="text-right">
+          <div className="text-[13px] font-medium" style={{ color }}>
+            {label}
+          </div>
+          <div className="label mt-0.5">{confidence} confidence</div>
         </div>
-        <div
-          className="mt-2 rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em]"
-          style={{ color, borderColor: `${color}55`, background: `${color}18` }}
-        >
-          {label}
+      </div>
+
+      <div className="relative mt-5">
+        <div className="relative h-2 overflow-hidden rounded-full bg-[var(--deck-inset)]">
+          <div
+            className="absolute inset-y-0 left-0 rounded-full"
+            style={{
+              width: `${pct}%`,
+              background: color,
+              transition: "width 0.7s cubic-bezier(0.23, 1, 0.32, 1)",
+            }}
+          />
+          {THRESHOLDS.map((t) => (
+            <span
+              key={t.value}
+              className="absolute top-0 bottom-0 w-px bg-[var(--line-strong)]"
+              style={{ left: `${t.value}%` }}
+            />
+          ))}
         </div>
-        <div className="mt-1.5 text-[10px] text-[var(--text-muted)]">{confidence} confidence</div>
+        <div className="relative mt-1.5 h-4">
+          {THRESHOLDS.map((t) => (
+            <span
+              key={t.value}
+              className="font-mono tnum absolute -translate-x-1/2 text-[10px] text-[var(--ink-3)]"
+              style={{ left: `${t.value}%` }}
+            >
+              {t.label}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );
