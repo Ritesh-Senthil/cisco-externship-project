@@ -1,73 +1,120 @@
 "use client";
 
-import { Panel, SeverityDot, StatusChip } from "@/components/ui";
+import { Panel, SeverityDot, StatusChip, useCountUp } from "@/components/ui";
 import { FairgroundsMap } from "@/components/FairgroundsMap";
+import { ReadinessGauge } from "@/components/ReadinessGauge";
+import { MiniMetric, ScoreTrend } from "@/components/LiveCharts";
+import { AiCopilot } from "@/components/AiCopilot";
+import { CiscoTechPanel } from "@/components/CiscoTechPanel";
+import { BusinessImpact } from "@/components/BusinessImpact";
+import type { MetricPoint } from "@/hooks/useEventShield";
 import type { ResponsePlan, ScenarioSnapshot } from "@/lib/types";
 
 export function CommandCenter({
   snapshot,
   preopeningPlan,
+  history,
   onGate,
   onIncident,
   onAsk,
   onApprovePreopening,
   onRejectPreopening,
   aiLoading,
+  aiAnswer,
+  onClearAi,
 }: {
   snapshot: ScenarioSnapshot;
   preopeningPlan: ResponsePlan | null;
+  history: MetricPoint[];
   onGate: () => void;
   onIncident: () => void;
   onAsk: (q: string) => void;
   onApprovePreopening: () => void;
   onRejectPreopening: () => void;
   aiLoading: boolean;
+  aiAnswer: { question: string; answer: string; source: string } | null;
+  onClearAi: () => void;
 }) {
   const r = snapshot.readiness;
-  const showPrePlan =
-    snapshot.phase === "pre_opening" &&
-    preopeningPlan &&
-    !snapshot.active_incident;
+  const f = r.forecast;
+  const showPrePlan = snapshot.phase === "pre_opening" && preopeningPlan && !snapshot.active_incident;
+  const depsAtRisk = useCountUp(r.critical_dependencies_at_risk, 500);
 
   return (
-    <div className="grid gap-4 xl:grid-cols-12">
-      <div className="xl:col-span-4 space-y-4">
-        <Panel title="Event Readiness">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <StatusChip status={r.status} />
-              <p className="mt-3 text-sm text-[var(--text-muted)]">{snapshot.demo_clock}</p>
+    <div className="space-y-4">
+      {/* Row A — hero */}
+      <div className="grid gap-4 xl:grid-cols-12">
+        <Panel title="Event Readiness" eyebrow={snapshot.demo_clock} className="xl:col-span-4" accent>
+          <div className="flex flex-col items-center">
+            <ReadinessGauge score={r.score} status={r.status} confidence={r.confidence} />
+            <div className="mt-3">
+              <StatusChip status={r.status} size="lg" />
             </div>
-            <div className="text-right">
-              <div className="text-5xl font-semibold tracking-tight text-[var(--cisco-navy)]">
-                {Math.round(r.score)}
-              </div>
-              <div className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-                Health score · {r.confidence} confidence
-              </div>
-            </div>
+            <p className="mt-4 text-center text-[13px] leading-relaxed text-[var(--text-muted)]">{r.insight}</p>
           </div>
-          <p className="mt-4 text-[15px] leading-relaxed text-[var(--text)]">{r.insight}</p>
-          <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-            <Metric label="Deps at risk" value={String(r.critical_dependencies_at_risk)} />
-            <Metric label="Queue" value={`${r.forecast.queue_estimate}`} />
-            <Metric label="Pred. wait" value={`${r.forecast.predicted_wait_min} min`} />
-            <Metric label="Trend" value={r.forecast.trend} />
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            <MiniStat label="Deps at risk" value={Math.round(depsAtRisk)} tone={r.critical_dependencies_at_risk > 0 ? "watch" : "healthy"} />
+            <MiniStat label="Trend" value={f.trend} />
+            <MiniStat label="Confidence" value={`${Math.round(f.confidence * 100)}%`} />
           </div>
         </Panel>
 
-        <Panel title="Critical Blockers">
+        <Panel title="Live Operations" eyebrow="Streaming · 1–2s" className="xl:col-span-5">
+          <div className="mb-3 rounded-xl border border-[var(--border)] bg-white/[0.02] p-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-dim)]">
+                Readiness score trend
+              </span>
+              <span className="font-display text-sm font-bold grad-text">{Math.round(r.score)}</span>
+            </div>
+            <ScoreTrend data={history} />
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <MiniMetric
+              label="Queue"
+              value={String(f.queue_estimate)}
+              data={history}
+              dataKey="queue"
+              color="#8b5cf6"
+            />
+            <MiniMetric
+              label="Pred. wait"
+              value={String(f.predicted_wait_min)}
+              unit="m"
+              data={history}
+              dataKey="wait"
+              color="#22a7f0"
+            />
+            <MiniMetric
+              label="Validation"
+              value={String(r.gate.validation_success)}
+              unit="%"
+              data={history}
+              dataKey="validation"
+              color="#34d399"
+              domain={[60, 100]}
+            />
+          </div>
+        </Panel>
+
+        <Panel title="Critical Blockers" eyebrow="Top risks" className="xl:col-span-3">
           {r.top_risks.length === 0 ? (
-            <p className="text-sm text-[var(--text-muted)]">No critical blockers.</p>
+            <div className="flex h-full min-h-28 flex-col items-center justify-center text-center">
+              <div className="grad-text font-display text-2xl font-extrabold">All clear</div>
+              <p className="mt-1 text-[12px] text-[var(--text-muted)]">No cross-domain blockers detected.</p>
+            </div>
           ) : (
-            <ul className="space-y-3">
+            <ul className="space-y-2.5">
               {r.top_risks.map((risk) => (
-                <li key={risk.id} className="rounded-md border border-[var(--border)] p-3">
+                <li
+                  key={risk.id}
+                  className="rounded-xl border border-[var(--border)] bg-white/[0.02] p-3 transition hover:border-[var(--border-strong)]"
+                >
                   <div className="flex items-center gap-2">
                     <SeverityDot severity={risk.severity} />
-                    <span className="font-semibold text-[var(--cisco-navy)]">{risk.title}</span>
+                    <span className="font-display text-[13px] font-bold text-[var(--text)]">{risk.title}</span>
                   </div>
-                  <p className="mt-1 text-sm text-[var(--text-muted)]">{risk.summary}</p>
+                  <p className="mt-1 text-[12px] leading-snug text-[var(--text-muted)]">{risk.summary}</p>
                 </li>
               ))}
             </ul>
@@ -75,104 +122,111 @@ export function CommandCenter({
         </Panel>
       </div>
 
-      <div className="xl:col-span-5 space-y-4">
+      {/* Business / financial impact */}
+      <BusinessImpact snapshot={snapshot} history={history} />
+
+      {/* Action banner */}
+      {snapshot.active_incident ? (
+        <button
+          onClick={onIncident}
+          className="grad-border animate-fade-up flex w-full items-center gap-4 rounded-2xl bg-[rgba(251,90,104,0.08)] px-5 py-4 text-left transition hover:bg-[rgba(251,90,104,0.14)]"
+        >
+          <span className="pulse-critical flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[rgba(251,90,104,0.2)] text-xl">
+            ⚠
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--status-critical)]">
+                Active Incident · {snapshot.active_incident.state}
+              </span>
+            </div>
+            <div className="font-display text-base font-bold text-[var(--text)]">{snapshot.active_incident.title}</div>
+            <p className="truncate text-[12px] text-[var(--text-muted)]">{snapshot.active_incident.summary}</p>
+          </div>
+          <span className="grad-text shrink-0 font-display text-sm font-bold">Open response →</span>
+        </button>
+      ) : showPrePlan ? (
+        <div className="grad-border animate-fade-up rounded-2xl bg-[var(--accent-soft)] p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-[0.14em] grad-text">Recommended Response</div>
+              <div className="font-display text-lg font-bold text-[var(--text)]">{preopeningPlan.title}</div>
+              <div className="mt-0.5 text-[12px] text-[var(--text-muted)]">
+                Risk {preopeningPlan.risk} · {preopeningPlan.expected_recovery} · human approval required
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={onRejectPreopening}
+                className="rounded-lg border border-[var(--border-strong)] px-4 py-2 text-[13px] font-semibold text-[var(--text-muted)] transition hover:text-[var(--text)]"
+              >
+                Reject
+              </button>
+              <button
+                onClick={onApprovePreopening}
+                className="grad-bg rounded-lg px-5 py-2 text-[13px] font-bold text-white shadow-[var(--glow)] transition hover:brightness-110"
+              >
+                Approve Plan
+              </button>
+            </div>
+          </div>
+          <ol className="mt-3 grid gap-2 sm:grid-cols-2">
+            {preopeningPlan.actions
+              .filter((a) => a.selected)
+              .map((a, i) => (
+                <li key={a.id} className="flex gap-2 rounded-lg border border-[var(--border)] bg-white/[0.02] px-3 py-2">
+                  <span className="grad-text font-display text-sm font-bold">{i + 1}</span>
+                  <div>
+                    <div className="text-[13px] font-semibold text-[var(--text)]">{a.title}</div>
+                    <div className="text-[11px] text-[var(--text-muted)]">{a.owner}</div>
+                  </div>
+                </li>
+              ))}
+          </ol>
+        </div>
+      ) : null}
+
+      {/* Row B */}
+      <div className="grid gap-4 xl:grid-cols-12">
         <Panel
-          title="Fairground Zones"
+          title="Fairgrounds Dependency Map"
+          eyebrow="Event topology"
+          className="xl:col-span-5"
           action={
-            <button
-              onClick={onGate}
-              className="text-sm font-semibold text-[var(--cisco-blue-deep)] hover:underline"
-            >
-              Open Gate 1 detail
+            <button onClick={onGate} className="grad-text text-[13px] font-bold hover:underline">
+              Gate 1 detail →
             </button>
           }
         >
           <FairgroundsMap snapshot={snapshot} onSelectGate={onGate} />
         </Panel>
 
-        {snapshot.active_incident && (
-          <Panel
-            title="Active Incident"
-            action={
-              <button
-                onClick={onIncident}
-                className="text-sm font-semibold text-[var(--cisco-blue-deep)] hover:underline"
-              >
-                Open response
-              </button>
-            }
-          >
-            <div className="flex items-center gap-2">
-              <SeverityDot severity={snapshot.active_incident.severity} />
-              <h3 className="font-semibold text-[var(--cisco-navy)]">
-                {snapshot.active_incident.title}
-              </h3>
-              <span className="ml-auto text-xs uppercase tracking-wide text-[var(--text-muted)]">
-                {snapshot.active_incident.state}
-              </span>
-            </div>
-            <p className="mt-2 text-sm leading-relaxed">{snapshot.active_incident.summary}</p>
-          </Panel>
-        )}
-      </div>
+        <div className="xl:col-span-4">
+          <AiCopilot
+            snapshot={snapshot}
+            onAsk={onAsk}
+            aiLoading={aiLoading}
+            aiAnswer={aiAnswer}
+            onClear={onClearAi}
+          />
+        </div>
 
-      <div className="xl:col-span-3 space-y-4">
-        <Panel title="Suggested questions">
-          <div className="flex flex-col gap-2">
-            {r.suggested_questions.map((q) => (
-              <button
-                key={q}
-                disabled={aiLoading}
-                onClick={() => onAsk(q)}
-                className="rounded-md border border-[var(--border)] bg-[#f7f9fb] px-3 py-2 text-left text-sm font-medium text-[var(--cisco-navy)] transition hover:border-[var(--cisco-blue)] hover:bg-white disabled:opacity-60"
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-        </Panel>
-
-        {showPrePlan && (
-          <Panel title="Recommended response">
-            <p className="text-sm text-[var(--text-muted)]">
-              Risk {preopeningPlan.risk} · {preopeningPlan.expected_recovery}
-            </p>
-            <ol className="mt-3 list-decimal space-y-2 pl-4 text-sm">
-              {preopeningPlan.actions
-                .filter((a) => a.selected)
-                .map((a) => (
-                  <li key={a.id}>
-                    <span className="font-medium">{a.title}</span>
-                    <span className="block text-[var(--text-muted)]">{a.owner}</span>
-                  </li>
-                ))}
-            </ol>
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={onRejectPreopening}
-                className="flex-1 rounded-md border border-[var(--border)] px-3 py-2 text-sm font-semibold"
-              >
-                Reject
-              </button>
-              <button
-                onClick={onApprovePreopening}
-                className="flex-1 rounded-md bg-[var(--cisco-blue)] px-3 py-2 text-sm font-semibold text-white hover:bg-[var(--cisco-blue-deep)]"
-              >
-                Approve Plan
-              </button>
-            </div>
-          </Panel>
-        )}
+        <div className="xl:col-span-3">
+          <CiscoTechPanel domainScores={r.domain_scores} />
+        </div>
       </div>
     </div>
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function MiniStat({ label, value, tone }: { label: string; value: string | number; tone?: "healthy" | "watch" }) {
+  const color = tone === "watch" ? "var(--status-watch)" : tone === "healthy" ? "var(--status-healthy)" : "var(--text)";
   return (
-    <div className="rounded-md border border-[var(--border)] bg-[#f7f9fb] px-3 py-2">
-      <div className="text-[11px] uppercase tracking-wider text-[var(--text-muted)]">{label}</div>
-      <div className="text-lg font-semibold text-[var(--cisco-navy)]">{value}</div>
+    <div className="rounded-xl border border-[var(--border)] bg-white/[0.02] px-3 py-2 text-center">
+      <div className="text-[9px] font-semibold uppercase tracking-[0.12em] text-[var(--text-dim)]">{label}</div>
+      <div className="mt-0.5 font-display text-base font-bold capitalize" style={{ color }}>
+        {value}
+      </div>
     </div>
   );
 }
